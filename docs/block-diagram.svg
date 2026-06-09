@@ -1,89 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" font-family="Inter, Helvetica, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="800" height="220" font-family="system-ui, -apple-system, sans-serif">
   <defs>
-    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e63946"/>
-      <stop offset="100%" stop-color="#c1121f"/>
-    </linearGradient>
-    <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#457b9d"/>
-      <stop offset="100%" stop-color="#1d3557"/>
-    </linearGradient>
-    <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2a9d8f"/>
-      <stop offset="100%" stop-color="#1b6b60"/>
-    </linearGradient>
-    <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e9c46a"/>
-      <stop offset="100%" stop-color="#d4a73a"/>
-    </linearGradient>
-    <linearGradient id="g5" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#264653"/>
-      <stop offset="100%" stop-color="#1a323b"/>
-    </linearGradient>
-    <filter id="shadow" x="-5%" y="-5%" width="115%" height="115%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.15"/>
-    </filter>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 9 5 L 0 9 z" fill="#555"/>
-    </marker>
+    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e63946"/><stop offset="100%" stop-color="#c1121f"/></linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2a9d8f"/><stop offset="100%" stop-color="#1b6b60"/></linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e9c46a"/><stop offset="100%" stop-color="#d4a73a"/></linearGradient>
+    <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#264653"/><stop offset="100%" stop-color="#1a323b"/></linearGradient>
+    <filter id="sh" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/></filter>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1L9 5L0 9z" fill="#555"/></marker>
     <style>
-      text { dominant-baseline: middle; font-family: inherit; }
+      text { dominant-baseline: middle; }
     </style>
   </defs>
 
-  <!-- Title -->
-  <text x="360" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#111">System Block Diagram</text>
-  <text x="360" y="50" text-anchor="middle" font-size="11" fill="#666">Signal flow</text>
+  <!-- HEADER -->
+  <text x="400" y="28" text-anchor="middle" font-size="16" font-weight="700" fill="#111">System Overview</text>
+  <text x="400" y="48" text-anchor="middle" font-size="11" fill="#888">Signal flow from sensors to analysis</text>
 
-  <!-- Block 1: INA226 -->
-  <rect x="10" y="100" width="110" height="120" rx="12" fill="url(#g1)" filter="url(#shadow)"/>
-  <text x="65" y="145" text-anchor="middle" fill="#fff" font-size="13" font-weight="bold">INA226</text>
-  <text x="65" y="165" text-anchor="middle" fill="#ffd4d9" font-size="10">Current</text>
-  <text x="65" y="180" text-anchor="middle" fill="#ffd4d9" font-size="10">Sensor</text>
+  <!-- BLOCK 1: SENSORS -->
+  <rect x="15" y="65" width="150" height="120" rx="12" fill="url(#g1)" filter="url(#sh)"/>
+  <text x="90" y="115" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">INA226</text>
+  <text x="90" y="135" text-anchor="middle" fill="#ffd4d9" font-size="11">+ Voltage</text>
+  <text x="90" y="152" text-anchor="middle" fill="#ffd4d9" font-size="11">Divider</text>
 
-  <!-- Block 2: Voltage Divider -->
-  <rect x="10" y="240" width="110" height="40" rx="10" fill="url(#g2)" filter="url(#shadow)"/>
-  <text x="65" y="260" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">Voltage Divider</text>
+  <!-- BLOCK 2: ESP32 -->
+  <rect x="230" y="65" width="150" height="120" rx="12" fill="url(#g2)" filter="url(#sh)"/>
+  <text x="305" y="110" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">ESP32</text>
+  <text x="305" y="132" text-anchor="middle" fill="#d9f2ee" font-size="11">ADC · I²C</text>
+  <text x="305" y="152" text-anchor="middle" fill="#d9f2ee" font-size="11">Processing</text>
 
-  <!-- Block 3: ESP32 -->
-  <rect x="200" y="140" width="130" height="140" rx="14" fill="url(#g3)" filter="url(#shadow)"/>
-  <text x="265" y="185" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">ESP32</text>
-  <text x="265" y="208" text-anchor="middle" fill="#d9f2ee" font-size="10">ADC · I²C</text>
-  <text x="265" y="228" text-anchor="middle" fill="#d9f2ee" font-size="10">Processing</text>
+  <!-- BLOCK 3: CSV -->
+  <rect x="445" y="65" width="150" height="120" rx="12" fill="url(#g3)" filter="url(#sh)"/>
+  <text x="520" y="110" text-anchor="middle" fill="#333" font-size="14" font-weight="700">Serial CSV</text>
+  <text x="520" y="132" text-anchor="middle" fill="#5a4a1a" font-size="11">timestamp, V,</text>
+  <text x="520" y="152" text-anchor="middle" fill="#5a4a1a" font-size="11">mA, mW</text>
 
-  <!-- Block 4: Serial CSV -->
-  <rect x="410" y="140" width="130" height="140" rx="14" fill="url(#g4)" filter="url(#shadow)"/>
-  <text x="475" y="185" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">UART CSV</text>
-  <text x="475" y="208" text-anchor="middle" fill="#5a4a1a" font-size="10">timestamp,</text>
-  <text x="475" y="223" text-anchor="middle" fill="#5a4a1a" font-size="10">voltage, current,</text>
-  <text x="475" y="238" text-anchor="middle" fill="#5a4a1a" font-size="10">power</text>
+  <!-- BLOCK 4: PC -->
+  <rect x="660" y="65" width="125" height="120" rx="12" fill="url(#g4)" filter="url(#sh)"/>
+  <text x="722" y="115" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">PC</text>
+  <text x="722" y="138" text-anchor="middle" fill="#ced4da" font-size="11">Plot &amp;</text>
+  <text x="722" y="155" text-anchor="middle" fill="#ced4da" font-size="11">Analyze</text>
 
-  <!-- Block 5: Plot / PC -->
-  <rect x="620" y="140" width="90" height="140" rx="14" fill="url(#g5)" filter="url(#shadow)"/>
-  <text x="665" y="195" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">PC</text>
-  <text x="665" y="215" text-anchor="middle" fill="#ced4da" font-size="10">Plot /</text>
-  <text x="665" y="230" text-anchor="middle" fill="#ced4da" font-size="10">Analyze</text>
-
-  <!-- Arrows -->
-  <!-- INA226 → ESP32 (I2C) -->
-  <line x1="120" y1="160" x2="195" y2="190" stroke="#555" stroke-width="2.5" marker-end="url(#arr)"/>
-  <text x="150" y="165" text-anchor="middle" font-size="10" fill="#e63946" font-weight="bold">I²C</text>
-
-  <!-- Divider → ESP32 (analog) -->
-  <line x1="120" y1="260" x2="195" y2="235" stroke="#555" stroke-width="2.5" marker-end="url(#arr)"/>
-  <text x="150" y="255" text-anchor="middle" font-size="9" fill="#457b9d" font-weight="bold">analog</text>
+  <!-- ARROWS -->
+  <!-- Sensors → ESP32 -->
+  <line x1="170" y1="125" x2="224" y2="125" stroke="#555" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="197" y="112" text-anchor="middle" font-size="10" fill="#e63946" font-weight="600">I²C +</text>
+  <text x="197" y="138" text-anchor="middle" font-size="10" fill="#e63946" font-weight="600">analog</text>
 
   <!-- ESP32 → CSV -->
-  <line x1="330" y1="210" x2="405" y2="210" stroke="#555" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="385" y1="125" x2="439" y2="125" stroke="#555" stroke-width="2.5" marker-end="url(#ar)"/>
 
   <!-- CSV → PC -->
-  <line x1="540" y1="210" x2="615" y2="210" stroke="#555" stroke-width="2.5" marker-end="url(#arr)"/>
-  <text x="578" y="200" text-anchor="middle" font-size="9" fill="#666">USB</text>
-
-  <!-- Device Under Test annotation -->
-  <rect x="155" y="75" width="50" height="22" rx="6" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
-  <text x="180" y="86" text-anchor="middle" font-size="9" fill="#666">DUT</text>
-  <line x1="120" y1="120" x2="155" y2="86" stroke="#999" stroke-width="1" stroke-dasharray="3 2"/>
-  <line x1="65" y1="240" x2="155" y2="86" stroke="#999" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="600" y1="125" x2="654" y2="125" stroke="#555" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="627" y="112" text-anchor="middle" font-size="10" fill="#666" font-weight="600">USB</text>
 
 </svg>
