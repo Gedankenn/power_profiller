@@ -2,6 +2,8 @@
 
 A low-cost power profiler built on the **ESP32** that measures voltage and current to generate real-time consumption graphs. Designed for profiling battery-powered or low-power devices in the 0–5 V / 0–800 mA range.
 
+![Block diagram](docs/block-diagram.png)
+
 ## Features
 
 - **Current sensing** via INA226 (I2C, 16-bit ADC) with 0.1 Ω shunt — ~24 µA resolution
@@ -23,43 +25,7 @@ A low-cost power profiler built on the **ESP32** that measures voltage and curre
 
 ### Schematic
 
-```
-                          ESP32
-                    +---------------+
-                    |               |
-    INA226          |  GPIO21/SDA  <---- SDA
-  +--------+        |  GPIO22/SCL  <---- SCL
-  |  VBUS  >--------+  GPIO34/ADC  <---- voltage divider tap
-  |  VIN+  >--[0.1Ω]--+               |
-  |  VIN-  >--------+  |              |
-  |  GND   >-----+  |  |              |
-  +--------+     |  |  |              |
-                  |  |  |              |
-  LOAD under test |  |  |              |
-  +-----------+   |  |  |              |
-  | V+  >-----------+  |              |
-  | GND >--------------+--------------+
-  +-----------+
-
-  Voltage divider (0–5 V → 0–2.5 V):
-    V_target >---[10kΩ]---+---[10kΩ]--- GND
-                          |
-                     GPIO34 (ADC)
-```
-
-### Sensing path
-
-```
- LOAD V+ ─┬─ INA226 VIN+ ──[ 0.1 Ω shunt ]── INA226 VIN- ──┬─ LOAD V+
-          │                                                  │
-          │   INA226 VBUS ───────────────────────────────────┘
-          │
-          └──[ 10 kΩ ]──┬──[ 10 kΩ ]── GND
-                        │
-                   ESP32 GPIO34 (ADC)
-
- LOAD GND ───────────── ESP32 GND
-```
+![Wiring diagram](docs/wiring-diagram.png)
 
 ### Pinout
 
