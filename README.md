@@ -2,7 +2,7 @@
 
 A low-cost power profiler built on the **ESP32** that measures voltage and current to generate real-time consumption graphs. Designed for profiling battery-powered or low-power devices in the 0–5 V / 0–800 mA range.
 
-![Block diagram](docs/block-diagram.png)
+![Block diagram](docs/block-diagram.svg)
 
 ## Features
 
@@ -25,7 +25,7 @@ A low-cost power profiler built on the **ESP32** that measures voltage and curre
 
 ### Schematic
 
-![Wiring diagram](docs/wiring-diagram.png)
+![Schematic](docs/schematic.svg)
 
 ### Pinout
 
