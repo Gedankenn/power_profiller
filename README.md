@@ -9,6 +9,7 @@ A low-cost power profiler built on the **ESP32** that measures voltage and curre
 - **Current sensing** via INA226 (I2C, 16-bit ADC) with 0.1 Ω shunt — ~24 µA resolution
 - **Voltage sensing** via resistive divider + ESP32 ADC — 0–5 V range
 - **CSV output** over serial at 10 samples/s — ready for plotting scripts or serial plotters
+- **Live web dashboard** via built-in WiFi — Chart.js graphs of voltage, current, power, and accumulated energy
 - Fully configurable shunt value, divider ratio, and sample rate via `#define`
 
 ## Hardware
@@ -63,6 +64,29 @@ idf.py -p /dev/ttyUSB0 flash monitor
 - Baud rate: 115200
 - Exit monitor: `Ctrl+]`
 
+## WiFi Setup
+
+Edit `WIFI_SSID` and `WIFI_PASS` at the top of `main/main.c` before flashing:
+
+```c
+#define WIFI_SSID   "your-ssid"
+#define WIFI_PASS   "your-password"
+```
+
+The ESP32 connects to your local WiFi on boot (blocks up to 30 seconds). Once connected, it prints its IP address via serial and starts the HTTP server.
+
+## Web Dashboard
+
+Open a browser to `http://<esp32-ip>/` to access the live dashboard:
+
+- **Voltage (V)** — from the ADC divider, updated every second
+- **Current (mA)** — from INA226, updated every second
+- **Power (mW)** — computed by INA226 (V_bus × I)
+- **Accumulated energy (mWh)** — integral of power over time
+- All three signals plotted as rolling 30-second line charts using Chart.js
+
+The dashboard is served directly from the ESP32 (no external hosting needed — the HTML/CSS/JS is inline in `main/web_page.h`).
+
 ## Output Format
 
 CSV lines at **10 samples/second**:
@@ -113,19 +137,22 @@ All key parameters are `#define` at the top of `main/main.c`:
 | `DIVIDER_R2` | 10000.0 | Bottom resistor of voltage divider (ohms) |
 | `SAMPLE_INTERVAL_MS` | 100 | Time between samples (10 Hz default) |
 | `INA226_ADDR` | 0x40 | I2C address |
+| `WIFI_SSID` | `"Stella"` | WiFi network name |
+| `WIFI_PASS` | `"…"` | WiFi password |
 
 ## Project Structure
 
 ```
 power_profiller/
 ├── main/
-│   ├── main.c               # App entry, sensor loop, CSV output
+│   ├── main.c               # App entry, WiFi, HTTP server, sensor task
+│   ├── web_page.h           # Inline HTML/JS dashboard (Chart.js)
 │   ├── bsp/
 │   │   ├── ina226_bsp.h     # INA226 BSP header (enums, structs, API)
 │   │   └── ina226_bsp.c     # INA226 BSP driver (all 10 registers, alert ISR)
 │   └── CMakeLists.txt
 ├── CMakeLists.txt            # Root ESP-IDF project
-├── sdkconfig.defaults        # FreeRTOS tick rate, log level
+├── sdkconfig.defaults        # FreeRTOS tick rate, log level, WiFi
 ├── AGENTS.md                 # Agent instructions for this repo
 └── README.md
 ```

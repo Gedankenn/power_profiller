@@ -34,13 +34,20 @@ idf.py -p /dev/ttyUSB0 monitor # serial monitor (Ctrl+] to exit)
 
 ## Output format
 
-CSV over serial at 10 samples/s:
+CSV over serial at 10 samples/s **and** real-time web dashboard via WiFi:
 
 ```
 timestamp_ms,voltage_v,current_ma,power_mw
 ```
 
-Feed this into the companion plot script (`scripts/plot.py` – TODO) or pipe into the serial plotter of your choice.
+- **Serial**: feed into `scripts/plot.py` (TODO) or any serial plotter.
+- **Web**: connect to the ESP32's IP address on port 80 — live Chart.js dashboard with voltage/current/power graphs and accumulated energy (mWh).
+- Web page is served inline from `main/web_page.h` (no SPIFFS needed).
+
+## WiFi
+
+Credentials are hardcoded `#define` at the top of `main/main.c`. Edit `WIFI_SSID` and `WIFI_PASS` before flashing.
+WiFi init blocks up to 30 s; HTTP server starts only after connection.
 
 ## Conventions
 
