@@ -87,13 +87,13 @@ typedef struct {
  * ================================================================ */
 
 typedef struct {
-    i2c_port_t       i2c_port;
-    uint8_t          i2c_addr;
-    float            current_lsb;
-    ina226_config_t  config;
+    i2c_port_t         i2c_port;
+    uint8_t            i2c_addr;
+    float              current_lsb;
+    ina226_config_t    config;
     /* Alert */
-    gpio_num_t       alert_pin;
-    TaskHandle_t      alert_task;
+    gpio_num_t         alert_pin;
+    SemaphoreHandle_t  alert_sem;
 } ina226_handle_t;
 
 /* ================================================================

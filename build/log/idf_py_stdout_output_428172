@@ -1,0 +1,43 @@
+Command: ninja all
+[1/11] Performing build step for 'bootloader'
+[1/1] cd /home/sabinho/github/power_profiller/build/bootloader/esp-idf/esptool_py && /home/sabinho/.espressif/python_env/idf5.5_py3.14_env/bin/python /home/sabinho/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 /home/sabinho/github/power_profiller/build/bootloader/bootloader.bin
+Bootloader binary size 0x6680 bytes. 0x980 bytes (8%) free.
+[2/11] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/bsp/ina226_bsp.c.obj
+[3/11] No install step for 'bootloader'
+[4/11] Completed 'bootloader'
+[5/11] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+In file included from /home/sabinho/github/power_profiller/main/main.c:9:
+/home/sabinho/esp/esp-idf/components/driver/deprecated/driver/adc.h:19:2: warning: #warning "legacy adc driver is deprecated, please migrate to use esp_adc/adc_oneshot.h and esp_adc/adc_continuous.h for oneshot mode and continuous mode drivers respectively" [-Wcpp]
+   19 | #warning "legacy adc driver is deprecated, please migrate to use esp_adc/adc_oneshot.h and esp_adc/adc_continuous.h for oneshot mode and continuous mode drivers respectively"
+      |  ^~~~~~~
+In file included from /home/sabinho/github/power_profiller/main/main.c:10:
+/home/sabinho/esp/esp-idf/components/esp_adc/deprecated/include/esp_adc_cal.h:17:2: warning: #warning "legacy adc calibration driver is deprecated, please migrate to use esp_adc/adc_cali.h and esp_adc/adc_cali_scheme.h" [-Wcpp]
+   17 | #warning "legacy adc calibration driver is deprecated, please migrate to use esp_adc/adc_cali.h and esp_adc/adc_cali_scheme.h"
+      |  ^~~~~~~
+/home/sabinho/github/power_profiller/main/main.c: In function 'adc_init':
+/home/sabinho/github/power_profiller/main/main.c:94:5: warning: 'ADC_ATTEN_DB_11' is deprecated [-Wdeprecated-declarations]
+   94 |     adc1_config_channel_atten(ADC_CHANNEL, ADC_ATTEN);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/sabinho/esp/esp-idf/components/driver/deprecated/driver/adc_types_legacy.h:8,
+                 from /home/sabinho/esp/esp-idf/components/driver/deprecated/driver/adc.h:15:
+/home/sabinho/esp/esp-idf/components/hal/include/hal/adc_types.h:51:5: note: declared here
+   51 |     ADC_ATTEN_DB_11 __attribute__((deprecated)) = ADC_ATTEN_DB_12,  ///<This is deprecated, it behaves the same as `ADC_ATTEN_DB_12`
+      |     ^~~~~~~~~~~~~~~
+/home/sabinho/github/power_profiller/main/main.c:95:5: warning: 'ADC_ATTEN_DB_11' is deprecated [-Wdeprecated-declarations]
+   95 |     esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH, 1100, &adc_chars);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/sabinho/esp/esp-idf/components/hal/include/hal/adc_types.h:51:5: note: declared here
+   51 |     ADC_ATTEN_DB_11 __attribute__((deprecated)) = ADC_ATTEN_DB_12,  ///<This is deprecated, it behaves the same as `ADC_ATTEN_DB_12`
+      |     ^~~~~~~~~~~~~~~
+[6/11] Linking C static library esp-idf/main/libmain.a
+[7/11] Generating esp-idf/esp_system/ld/sections.ld
+[8/11] Building C object CMakeFiles/power_profiller.elf.dir/project_elf_src_esp32.c.obj
+[9/11] Linking CXX executable power_profiller.elf
+[10/11] Generating binary image from built executable
+esptool.py v4.12.dev2
+Creating esp32 image...
+Merged 2 ELF sections
+Successfully created esp32 image.
+Generated /home/sabinho/github/power_profiller/build/power_profiller.bin
+[11/11] cd /home/sabinho/github/power_profiller/build/esp-idf/esptool_py && /home/sabinho/.espressif/python_env/idf5.5_py3.14_env/bin/python /home/sabinho/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app /home/sabinho/github/power_profiller/build/partition_table/partition-table.bin /home/sabinho/github/power_profiller/build/power_profiller.bin
+power_profiller.bin binary size 0xce7c0 bytes. Smallest app partition is 0x100000 bytes. 0x31840 bytes (19%) free.

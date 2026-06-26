@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}

@@ -1,0 +1,2 @@
+source /home/sabinho/github/power_profiller/build/gdbinit/symbols
+source /home/sabinho/github/power_profiller/build/gdbinit/connect

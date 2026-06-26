@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/home/sabinho/github/power_profiller/build/CMakeFiles/bootloader
+/home/sabinho/github/power_profiller/build/CMakeFiles/bootloader.rule
+/home/sabinho/github/power_profiller/build/CMakeFiles/bootloader-complete.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/home/sabinho/github/power_profiller/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
