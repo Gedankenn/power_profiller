@@ -32,7 +32,7 @@ static const char *TAG = "profiler";
 #define I2C_SDA_GPIO    21
 #define I2C_SCL_GPIO    22
 #define I2C_FREQ_HZ     100000
-#define INA226_ADDR     0x40
+#define INA226_ADDR     0x44
 #define SHUNT_OHM       0.1f
 #define MAX_CURRENT_A   0.8f
 
@@ -90,6 +90,23 @@ static void i2c_init(void)
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_PORT, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_PORT, conf.mode, 0, 0, 0));
+}
+
+static void i2c_scan(void)
+{
+    ESP_LOGI(TAG, "I2C bus scan:");
+    for (uint8_t addr = 1; addr < 127; addr++) {
+        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, true);
+        i2c_master_stop(cmd);
+        esp_err_t ret = i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(50));
+        i2c_cmd_link_delete(cmd);
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "  Device found at 0x%02X", addr);
+        }
+    }
+    ESP_LOGI(TAG, "I2C scan complete");
 }
 
 static void adc_init(void)
@@ -394,7 +411,12 @@ void app_main(void)
     /* Start HTTP server */
     start_http_server();
 
-    /* Init INA226 (non-fatal — works without sensor connected) */
+    /* I2C bus scan for diagnostics */
+    i2c_scan();
+
+    /* Init INA226 (non-fatal — works without sensor connected)
+     * Try common addresses: 0x40 (default), 0x41, 0x44, 0x45 */
+    static const uint8_t addrs[] = {0x40, 0x41, 0x44, 0x45};
     ina226_config_t cfg = {
         .avg        = INA226_AVG_16,
         .bus_ct     = INA226_CT_1100us,
@@ -405,22 +427,24 @@ void app_main(void)
     };
 
     ina226_handle_t ina;
-    ret = ina226_bsp_init(&ina, I2C_PORT, INA226_ADDR, &cfg);
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "INA226 not found — running without current sensor");
-    } else {
-        ret = ina226_bsp_verify(&ina);
-        if (ret != ESP_OK) {
-            ESP_LOGW(TAG, "INA226 verify failed — running without current sensor");
-        } else {
-            ina_present = true;
-            ESP_LOGI(TAG, "INA226 ready");
-            ret = ina226_bsp_alert_setup(&ina, INA226_ALERT_GPIO,
-                         INA226_ALERT_MASK, INA226_ALERT_LIMIT, INA226_ALERT_LATCH);
-            if (ret != ESP_OK) {
-                ESP_LOGW(TAG, "Alert setup failed (continuing)");
-            }
+    int addr_idx;
+    for (addr_idx = 0; addr_idx < 4; addr_idx++) {
+        ret = ina226_bsp_init(&ina, I2C_PORT, addrs[addr_idx], &cfg);
+        if (ret == ESP_OK) {
+            ret = ina226_bsp_verify(&ina);
+            if (ret == ESP_OK) break;
         }
+    }
+    if (addr_idx < 4) {
+        ina_present = true;
+        ESP_LOGI(TAG, "INA226 ready at 0x%02X", addrs[addr_idx]);
+        ret = ina226_bsp_alert_setup(&ina, INA226_ALERT_GPIO,
+                     INA226_ALERT_MASK, INA226_ALERT_LIMIT, INA226_ALERT_LATCH);
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "Alert setup failed (continuing)");
+        }
+    } else {
+        ESP_LOGW(TAG, "INA226 not found on any I2C address — running without current sensor");
     }
 
     /* Launch sensor task */
