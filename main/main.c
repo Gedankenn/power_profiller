@@ -339,25 +339,28 @@ static void sensor_task(void *arg)
     printf("timestamp_ms,voltage_v,current_ma,power_mw\n");
 
     while (1) {
-        float current_a = 0, power_w = 0, v_ext = 0;
+        float current_a = 0, power_w = 0, v_bus = 0, v_adc = 0;
         uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
 
-        v_ext = read_voltage_divider();
+        v_adc = read_voltage_divider();
 
         if (ina_present) {
+            ina226_bsp_read_bus_voltage(ina, &v_bus);
             ina226_bsp_read_current(ina, &current_a);
             ina226_bsp_read_power(ina, &power_w);
+        } else {
+            v_bus = v_adc;
         }
 
         float current_ma = current_a * 1000.0f;
         float power_mw   = power_w * 1000.0f;
 
-        printf("%lu,%.3f,%.3f,%.3f\n", now, v_ext, current_ma, power_mw);
+        printf("%lu,%.3f,%.3f,%.3f\n", now, v_bus, current_ma, power_mw);
 
         xSemaphoreTake(history_mutex, portMAX_DELAY);
         {
             history[history_write] = (sample_t){
-                .voltage_v    = v_ext,
+                .voltage_v    = v_bus,
                 .current_ma   = current_ma,
                 .power_mw     = power_mw,
                 .timestamp_ms = now,
