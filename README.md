@@ -1,162 +1,257 @@
+<p align="center">
+  <img src="docs/block-diagram.svg" alt="Power Profiler" width="720">
+</p>
+
+<p align="center">
+  <a href="https://github.com/espressif/esp-idf"><img src="https://img.shields.io/badge/ESP--IDF-v5.5-blue?logo=espressif" alt="ESP-IDF"></a>
+  <a href="#"><img src="https://img.shields.io/badge/MCU-ESP32-red?logo=espressif" alt="ESP32"></a>
+  <a href="https://github.com/Gedankenn/power_profiller/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
+</p>
+
 # Power Profiler
 
-A low-cost power profiler built on the **ESP32** that measures voltage and current to generate real-time consumption graphs. Designed for profiling battery-powered or low-power devices in the 0–5 V / 0–800 mA range.
+**Power Profiler** is a real-time voltage, current, and power monitoring tool built on ESP32 and the
+INA226 precision current/power sensor. It streams CSV data over serial *and* serves a live Chart.js
+web dashboard via WiFi — no external hosting, no cloud, no dependencies beyond the ESP32 itself.
 
-![Block diagram](docs/block-diagram.svg)
+Designed for profiling battery-powered devices, embedded circuits, and low-power electronics in the
+0–36 V / 0–800 mA range.
+
+<br>
+
+## Table of Contents
+
+- [Features](#features)
+- [Hardware](#hardware)
+  - [Bill of Materials](#bill-of-materials)
+  - [Wiring — INA226 module to ESP32](#wiring--ina226-module-to-esp32)
+  - [Shunt & load connections](#shunt--load-connections)
+  - [Schematic](#schematic)
+- [Build & Flash](#build--flash)
+- [Web Dashboard](#web-dashboard)
+- [Serial Output](#serial-output)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [License](#license)
+
+<br>
 
 ## Features
 
-- **Current sensing** via INA226 (I2C, 16-bit ADC) with 0.1 Ω shunt — ~24 µA resolution
-- **Voltage sensing** via resistive divider + ESP32 ADC — 0–5 V range
-- **CSV output** over serial at 10 samples/s — ready for plotting scripts or serial plotters
-- **Live web dashboard** via built-in WiFi — Chart.js graphs of voltage, current, power, and accumulated energy
-- Fully configurable shunt value, divider ratio, and sample rate via `#define`
+| | | |
+|---|---|---|
+| **Current sensing** | INA226 (I2C, 16-bit ADC) with 0.1 Ω shunt — ~24 µA resolution, up to ±800 mA |
+| **Voltage sensing** | INA226 VBUS pin — 0–36 V range, 1.25 mV LSB (also: ADC + resistive divider on GPIO34) |
+| **Power calculation** | Hardware-computed by INA226 (VBUS × Current), 25× Current-LSB resolution |
+| **Serial CSV** | `timestamp_ms,voltage_v,current_ma,power_mw` at 10 samples/s |
+| **Web dashboard** | Real-time Chart.js graphs of voltage, current, power + accumulated energy (mWh) |
+| **WiFi** | Connects to your home network, serves dashboard on port 80 |
+| **Alert pin** | Configurable over-voltage/current/power alert via GPIO19 ISR |
+| **Device verification** | Startup check of INA226 Manufacturer ID (0x5449) and Die ID (0x2260) |
+| **I²C scan** | Scans bus on boot — auto-detects INA226 address (0x40, 0x41, 0x44, 0x45) |
+| **Fully configurable** | Shunt value, voltage divider ratio, sample rate, WiFi — all `#define` |
+
+<br>
 
 ## Hardware
 
 ### Bill of Materials
 
 | Qty | Part | Notes |
-|-----|------|-------|
-| 1 | ESP32 dev board | Any ESP32 with USB-UART |
-| 1 | INA226 module | I2C current/power monitor, addr 0x40 |
-| 1 | 0.1 Ω shunt resistor | Unless your INA226 module already has one |
-| 2 | 10 kΩ resistors | For voltage divider (0.1% tolerance recommended) |
-| 1 | Breadboard + wires | Or custom PCB |
+|---:|---|---|
+| 1× | ESP32 dev board | Any ESP32 with USB-UART |
+| 1× | INA226 module | I²C current/power monitor (AliExpress modules: VCC, GND, SDA, SCL, ALE, VBS, IN+, IN-) |
+| 1× | 0.1 Ω shunt resistor | Only if your INA226 module doesn't include one (most modules have it onboard) |
+| 2× | 10 kΩ resistors | Voltage divider (optional — INA226 VBUS already measures voltage) |
+| 1× | Breadboard + wires | |
+
+### Wiring — INA226 module to ESP32
+
+```
+      INA226 Module                  ESP32 Dev Board
+    ┌──────────────┐             ┌──────────────────┐
+    │ VCC  ────────────────────── 3.3 V (or 5 V)    │
+    │ GND  ────────────────────── GND                │
+    │ SDA  ────────────────────── GPIO 21            │
+    │ SCL  ────────────────────── GPIO 22            │
+    │ ALE  ────────────────────── GPIO 19  (optional)│
+    │ VBS  ──┐                                       │
+    │ IN+  ──┤  (see shunt diagram below)            │
+    │ IN-  ──┘                                       │
+    └──────────────┘             └──────────────────┘
+```
+
+> **Note on VCC**: most INA226 modules from AliExpress/Amazon work with either 3.3 V or 5 V.
+> If the I²C scan shows no device, try 5 V (VIN pin on the ESP32).
+
+### Pinout table
+
+| ESP32 | Signal | INA226 pin | Notes |
+|------:|--------|-----------|-------|
+| 3.3 V | Power | VCC | May also use 5 V |
+| GND | Ground | GND | Common ground with DUT |
+| GPIO 21 | I²C SDA | SDA | Internal pull-up enabled |
+| GPIO 22 | I²C SCL | SCL | Internal pull-up enabled |
+| GPIO 19 | Alert | ALE | Active-low, negative-edge ISR |
+| GPIO 34 | ADC | *(divider tap)* | Input-only, no pull. Optional: external 10k/10k divider |
+
+### Shunt & load connections
+
+The INA226 measures current through a shunt resistor placed **in series** with the positive power
+rail. The VBUS pin measures the voltage at the load side.
+
+```
+Power Source (5 V) ──[ 0.1 Ω shunt ]──┬── LOAD V+
+                                      │
+                    INA226            │
+                    ┌────────┐        │
+              IN+ ──┤        ├─ IN- ──┘
+              VBS ──┤        │         (same node as IN-)
+                    └────────┘
+
+Power Source GND ──────────────────── LOAD V- (GND)
+```
+
+> **IN+** = source side of shunt · **IN-** = load side of shunt · **VBS** = same node as IN- (load side)
 
 ### Schematic
 
-![Schematic](docs/schematic.svg)
+<p align="center">
+  <img src="docs/schematic.svg" alt="Circuit schematic" width="780">
+</p>
 
-### Pinout
-
-| ESP32 GPIO | Signal | Direction | Connected to |
-|------------|--------|-----------|--------------|
-| 21 | I2C SDA | Bidir | INA226 SDA |
-| 22 | I2C SCL | Output | INA226 SCL |
-| 19 | Alert | Input | INA226 ALERT (active low, interrupt) |
-| 34 | ADC1_CH6 | Input | Voltage divider tap (V_target / 2) |
-| GND | Ground | — | INA226 GND, load GND, divider bottom |
-
-**Notes:**
-- GPIO 34 is input-only (no pull-up/pull-down) — ideal for analog sensing.
-- ALERT pin (GPIO 19) uses negative-edge interrupt with internal pull-up. Configured in `main/main.c`.
-- The voltage divider ratio is **0.5** (10 kΩ / 10 kΩ). To change the measurable voltage range, adjust the divider resistors and update `DIVIDER_R1` / `DIVIDER_R2` in `main/main.c`.
-- The shunt resistor sets the maximum measurable current: 0.1 Ω → ~800 mA. For higher currents, use a smaller shunt (e.g., 0.01 Ω for ~8 A) and update `SHUNT_OHM` and `MAX_CURRENT_A`.
-- INA226 I2C address is 0x40 by default. If using a module with A0/A1 pins strapped differently, update `INA226_ADDR`.
+<br>
 
 ## Build & Flash
 
-Requires [ESP-IDF](https://github.com/espressif/esp-idf) (v5.x recommended).
+Requires [ESP-IDF](https://github.com/espressif/esp-idf) v5.x.
 
 ```bash
 # One-time setup
 . $IDF_PATH/export.sh
 idf.py set-target esp32
 
-# Build
-idf.py build
-
-# Flash and monitor
+# Build, flash & monitor
 idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
-- Baud rate: 115200
-- Exit monitor: `Ctrl+]`
+| | |
+|---|---|
+| Baud rate | 115200 |
+| Exit monitor | `Ctrl+]` |
+| Flash size | 1 MB app partition (19% free) |
 
-## WiFi Setup
+### First boot
 
-Edit `WIFI_SSID` and `WIFI_PASS` at the top of `main/main.c` before flashing:
+1. Edit `WIFI_SSID` / `WIFI_PASS` in `main/main.c:24-25`
+2. `idf.py build && idf.py -p /dev/ttyUSB0 flash monitor`
+3. Watch the serial output for the IP address
+4. Open `http://<esp32-ip>/` in your browser
 
-```c
-#define WIFI_SSID   "your-ssid"
-#define WIFI_PASS   "your-password"
+```text
+I (5308) profiler: WiFi connected — IP: 192.168.5.98
+I (2016) profiler: I2C bus scan:
+I (2016) profiler:   Device found at 0x44
+I (2024) profiler: INA226 ready at 0x44
 ```
 
-The ESP32 connects to your local WiFi on boot (blocks up to 30 seconds). Once connected, it prints its IP address via serial and starts the HTTP server.
+<br>
 
 ## Web Dashboard
 
-Open a browser to `http://<esp32-ip>/` to access the live dashboard:
+Point your browser to `http://<esp32-ip>/`. The dashboard updates automatically every second.
 
-- **Voltage (V)** — from the ADC divider, updated every second
-- **Current (mA)** — from INA226, updated every second
-- **Power (mW)** — computed by INA226 (V_bus × I)
-- **Accumulated energy (mWh)** — integral of power over time
-- All three signals plotted as rolling 30-second line charts using Chart.js
+**What you see:**
+- Three metric cards showing the latest **voltage (V)**, **current (mA)**, and **power (mW)**
+- Three rolling line charts (30-second history) for voltage, current, and power
+- Accumulated **energy (mWh)** — integral of power over time
 
-The dashboard is served directly from the ESP32 (no external hosting needed — the HTML/CSS/JS is inline in `main/web_page.h`).
+**Technology**: HTML/CSS/JS served inline from `main/web_page.h` — no SPIFFS, no external files.
+Chart.js loaded from CDN. Charts rendered client-side in the browser.
 
-## Output Format
+<p align="center">
+  <em>Dashboard screenshot (coming soon)</em>
+</p>
 
-CSV lines at **10 samples/second**:
+### API endpoints
+
+| Method | Path | Response |
+|--------|------|----------|
+| `GET` | `/` | Full HTML dashboard |
+| `GET` | `/api/data` | `{"t":[...], "v":[...], "c":[...], "p":[...], "e":1.23}` — 300 samples |
+| `GET` | `/api/latest` | `{"t":14237, "v":4.987, "c":8.37, "p":41.72, "e":0.05, "ip":"192.168.5.98"}` |
+
+<br>
+
+## Serial Output
+
+CSV stream at **10 samples/second**:
 
 ```
 timestamp_ms,voltage_v,current_ma,power_mw
-1423,3.301,12.456,41.117
-1523,3.302,12.389,40.908
-...
+1423,4.987,8.374,41.725
+1523,4.985,8.350,41.520
 ```
 
-Columns:
-- `timestamp_ms` — milliseconds since boot
-- `voltage_v` — load voltage from the ADC divider path
-- `current_ma` — current through shunt (INA226)
-- `power_mw` — power computed by INA226 (V_bus × I)
+| Column | Source | Description |
+|--------|--------|-------------|
+| `timestamp_ms` | FreeRTOS tick | Milliseconds since boot |
+| `voltage_v` | INA226 VBUS | Bus voltage at the load |
+| `current_ma` | INA226 Current Register | Current through shunt |
+| `power_mw` | INA226 Power Register | Calculated power (VBUS × I) |
 
-## Plotting
-
-Pipe the serial output into a companion script or use any CSV-capable plotter:
+Pipe to a file or plot live:
 
 ```bash
-# Save to file
 idf.py -p /dev/ttyUSB0 monitor > data.csv
-
-# Or use the companion plot script (TODO)
-python scripts/plot.py --port /dev/ttyUSB0
 ```
 
-For quick visualization, try [SerialPlot](https://github.com/hyOzd/serialplot) or gnuplot:
-
-```gnuplot
-set datafile separator ','
-plot 'data.csv' every ::1 using 1:2 with lines title 'Voltage (V)', \
-     '' every ::1 using 1:3 with lines title 'Current (mA)', \
-     '' every ::1 using 1:4 with lines title 'Power (mW)'
-```
+<br>
 
 ## Configuration
 
-All key parameters are `#define` at the top of `main/main.c`:
+All parameters are `#define` at the top of `main/main.c`:
 
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
-| `SHUNT_OHM` | 0.1 | Shunt resistor value in ohms |
-| `MAX_CURRENT_A` | 0.8 | Maximum expected current (for INA226 calibration) |
-| `DIVIDER_R1` | 10000.0 | Top resistor of voltage divider (ohms) |
-| `DIVIDER_R2` | 10000.0 | Bottom resistor of voltage divider (ohms) |
-| `SAMPLE_INTERVAL_MS` | 100 | Time between samples (10 Hz default) |
-| `INA226_ADDR` | 0x40 | I2C address |
 | `WIFI_SSID` | `"Stella"` | WiFi network name |
-| `WIFI_PASS` | `"…"` | WiFi password |
+| `WIFI_PASS` | `"laedevoltaoutravez"` | WiFi password |
+| `INA226_ADDR` | `0x44` | I²C address (auto-detected at boot) |
+| `SHUNT_OHM` | `0.1` | Shunt resistor value (Ω) |
+| `MAX_CURRENT_A` | `0.8` | Full-scale expected current |
+| `DIVIDER_R1` | `10000.0` | Top resistor of external divider (Ω) |
+| `DIVIDER_R2` | `10000.0` | Bottom resistor of external divider (Ω) |
+| `SAMPLE_INTERVAL_MS` | `100` | Sampling period (10 Hz) |
+| `INA226_ALERT_GPIO` | `19` | Alert interrupt pin |
+| `INA226_ALERT_MASK` | `INA226_ALERT_POL` | Power over-limit alert |
+| `INA226_ALERT_LIMIT` | `10000` | Alert threshold (power LSBs) |
+
+<br>
 
 ## Project Structure
 
 ```
 power_profiller/
 ├── main/
-│   ├── main.c               # App entry, WiFi, HTTP server, sensor task
-│   ├── web_page.h           # Inline HTML/JS dashboard (Chart.js)
+│   ├── main.c               # App entry: WiFi, HTTP server, sensor task, CSV
+│   ├── web_page.h           # Inline HTML/JS dashboard (Chart.js, dark theme)
 │   ├── bsp/
-│   │   ├── ina226_bsp.h     # INA226 BSP header (enums, structs, API)
-│   │   └── ina226_bsp.c     # INA226 BSP driver (all 10 registers, alert ISR)
+│   │   ├── ina226_bsp.h     # INA226 BSP — enums, config struct, full API
+│   │   └── ina226_bsp.c     # INA226 driver — all 10 registers, alert ISR, verify
 │   └── CMakeLists.txt
+├── docs/
+│   ├── schematic.svg        # Circuit schematic
+│   ├── block-diagram.svg    # System architecture diagram
+│   └── ina226.pdf           # TI INA226 datasheet
+├── .gitignore
 ├── CMakeLists.txt            # Root ESP-IDF project
-├── sdkconfig.defaults        # FreeRTOS tick rate, log level, WiFi
-├── AGENTS.md                 # Agent instructions for this repo
+├── sdkconfig.defaults        # FreeRTOS 1000 Hz, WiFi STA, INFO log
+├── AGENTS.md                 # OpenCode agent instructions
 └── README.md
 ```
 
+<br>
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.

@@ -1,170 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 550" width="900" height="550" font-family="system-ui, -apple-system, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" font-family="system-ui, -apple-system, sans-serif">
   <defs>
     <style>
-      text { dominant-baseline: middle; }
-      .tt  { font-size:17px; font-weight:700; fill:#111; }
-      .st  { font-size:11px; fill:#666; }
-      .lb  { font-size:12px; fill:#333; font-weight:600; }
-      .pi  { font-size:10px; font-family:monospace; fill:#333; }
-      .vl  { font-size:10px; fill:#555; }
-      .chip { font-size:13px; font-weight:700; fill:#fff; }
-      .chipsub { font-size:9px; fill:#868e96; }
-      .pwr { stroke:#d63384; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; fill:none; }
-      .adc { stroke:#0d6efd; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; fill:none; }
-      .sig { stroke:#333; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; fill:none; }
-      .i2c { stroke:#fd7e14; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; fill:none; }
-      .gnd { stroke:#666; stroke-width:1.5; stroke-linecap:round; fill:none; }
-      .dot { fill:#333; }
+      text{dominant-baseline:middle}
+      .tt{font-size:17px;font-weight:700;fill:#111}
+      .lb{font-size:12px;fill:#333;font-weight:600}
+      .pi{font-size:10px;font-family:monospace;fill:#333}
+      .vl{font-size:10px;fill:#555}
+      .chip{font-size:13px;font-weight:700;fill:#fff}
+      .chipsub{font-size:9px;fill:#868e96}
+      .pwr{stroke:#d63384;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .sig{stroke:#333;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .i2c{stroke:#fd7e14;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .gnd{stroke:#666;stroke-width:1.5;stroke-linecap:round;fill:none}
+      .dot{fill:#333}
     </style>
   </defs>
 
-  <!-- TITLE -->
   <text x="450" y="28" text-anchor="middle" class="tt">Power Profiler — Circuit Schematic</text>
 
-  <!-- ============================================================ -->
-  <!--  MAIN POWER RAIL  V_target (0–5 V)                          -->
-  <!-- ============================================================ -->
-  <text x="45" y="68" class="lb">V_target</text>
-  <text x="45" y="84" class="st">(0–5 V)</text>
+  <text x="45" y="68" class="lb">V_source</text>
+  <text x="45" y="84" font-size="11" fill="#666">(0–36 V)</text>
   <line x1="92" y1="70" x2="700" y2="70" class="pwr"/>
+  <circle cx="420" cy="70" r="4" class="dot"/>
+  <circle cx="480" cy="70" r="4" class="dot"/>
 
-  <!-- Junction dots on rail -->
-  <circle cx="200" cy="70" r="4" class="dot"/>   <!-- divider tap -->
-  <circle cx="420" cy="70" r="4" class="dot"/>   <!-- pre-shunt -->
-  <circle cx="480" cy="70" r="4" class="dot"/>   <!-- post-shunt -->
-
-  <!-- ============================================================ -->
-  <!--  VOLTAGE DIVIDER                                            -->
-  <!-- ============================================================ -->
-  <!-- Drop from V_target rail -->
-  <path d="M 200 70 v 14" class="adc"/>
-
-  <!-- R1: vertical zigzag resistor, 60 px tall -->
-  <path d="M 200 84 l 8,6 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 8,-6" class="adc"/>
-  <text x="215" y="110" text-anchor="start" fill="#0d6efd" class="vl">10 kΩ</text>
-
-  <!-- Wire from R1 end to junction -->
-  <path d="M 200 144 v 8" class="adc"/>
-
-  <!-- Junction + ADC tap -->
-  <circle cx="200" cy="152" r="4" class="dot"/>
-  <line x1="200" y1="152" x2="130" y2="152" class="adc"/>
-  <text x="125" y="152" text-anchor="end" fill="#0d6efd" font-family="monospace" font-size="10">GPIO34 (ADC)</text>
-
-  <!-- R2: vertical zigzag resistor, 56 px tall -->
-  <path d="M 200 152 v 10"/>
-  <path d="M 200 162 l 8,6 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 8,-6" class="adc"/>
-  <text x="215" y="188" text-anchor="start" fill="#0d6efd" class="vl">10 kΩ</text>
-  <path d="M 200 218 v 6" class="adc"/>
-
-  <!-- Wire from R2 end down to GND rail -->
-  <path d="M 200 224 v 161" class="gnd" stroke-dasharray="5 4"/>
-  <circle cx="200" cy="385" r="4" class="dot"/>
-
-  <!-- ============================================================ -->
-  <!--  SHUNT RESISTOR on main rail                                -->
-  <!-- ============================================================ -->
   <path d="M 420 70 l 6,10 l 6,-10 l 6,10 l 6,-10 l 6,10 l 6,-10 l 6,10 l 6,-10 l 6,10 l 6,-10" class="pwr"/>
   <text x="450" y="56" text-anchor="middle" fill="#d63384" class="vl">0.1 Ω shunt</text>
 
-  <!-- ============================================================ -->
-  <!--  INA226 CHIP                                                -->
-  <!-- ============================================================ -->
+  <!-- INA226 -->
   <rect x="240" y="265" width="140" height="85" rx="8" fill="#1a1a2e" stroke="#333" stroke-width="2"/>
   <text x="310" y="302" text-anchor="middle" class="chip">INA226</text>
-  <text x="310" y="320" text-anchor="middle" class="chipsub">16-bit I/V Power Monitor</text>
+  <text x="310" y="320" text-anchor="middle" class="chipsub">@ 0x44 (I²C)</text>
 
-  <!-- LEFT PINS -->
   <line x1="240" y1="280" x2="220" y2="280" stroke="#ccc" stroke-width="1.5"/>
   <text x="233" y="280" text-anchor="end" fill="#d63384" class="pi">VBUS</text>
-
   <line x1="240" y1="300" x2="220" y2="300" stroke="#ccc" stroke-width="1.5"/>
   <text x="233" y="300" text-anchor="end" class="pi">GND</text>
-
   <line x1="240" y1="320" x2="220" y2="320" stroke="#ccc" stroke-width="1.5"/>
   <text x="233" y="320" text-anchor="end" fill="#fd7e14" class="pi">SDA</text>
-
   <line x1="240" y1="340" x2="220" y2="340" stroke="#ccc" stroke-width="1.5"/>
   <text x="233" y="340" text-anchor="end" fill="#fd7e14" class="pi">SCL</text>
 
-  <!-- RIGHT PINS -->
   <line x1="380" y1="292" x2="400" y2="292" stroke="#ccc" stroke-width="1.5"/>
-  <text x="387" y="292" text-anchor="start" class="pi">VIN+</text>
-
+  <text x="387" y="292" text-anchor="start" class="pi">IN+</text>
   <line x1="380" y1="328" x2="400" y2="328" stroke="#ccc" stroke-width="1.5"/>
-  <text x="387" y="328" text-anchor="start" class="pi">VIN-</text>
+  <text x="387" y="328" text-anchor="start" class="pi">IN−</text>
 
-  <!-- ============================================================ -->
-  <!--  WIRING: INA226 to circuit                                  -->
-  <!-- ============================================================ -->
-
-  <!-- VBUS wire: clean L-shape — left, up to rail, right to post-shunt -->
+  <!-- Wiring -->
   <path d="M 220 280 v -210 h 260" class="pwr"/>
-
-  <!-- VIN+ wire: right, up past chip, left-tap to pre-shunt -->
   <path d="M 400 292 h 12 v -222 h 8" class="pwr"/>
-
-  <!-- VIN- wire: right, up to post-shunt junction -->
   <path d="M 400 328 h 80 v -258" class="pwr"/>
-
-  <!-- SDA out to ESP32 -->
   <line x1="220" y1="320" x2="170" y2="320" class="i2c"/>
   <text x="165" y="320" text-anchor="end" fill="#fd7e14" class="pi">GPIO21</text>
-
-  <!-- SCL out to ESP32 -->
   <line x1="220" y1="340" x2="170" y2="340" class="i2c"/>
   <text x="165" y="340" text-anchor="end" fill="#fd7e14" class="pi">GPIO22</text>
-
-  <!-- INA226 GND to ground rail -->
   <path d="M 260 350 v 35" class="gnd" stroke-dasharray="5 4"/>
   <circle cx="260" cy="385" r="4" class="dot"/>
 
-  <!-- ============================================================ -->
-  <!--  LOAD (DUT)                                                 -->
-  <!-- ============================================================ -->
+  <!-- Voltage divider (optional) -->
+  <path d="M 480 70 v 14" class="sig"/>
+  <path d="M 480 84 l 8,6 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 8,-6" stroke="#0d6efd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="495" y="110" text-anchor="start" fill="#0d6efd" class="vl">10 kΩ</text>
+  <path d="M 480 144 v 8" stroke="#0d6efd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="480" cy="152" r="4" class="dot"/>
+  <line x1="480" y1="152" x2="560" y2="152" stroke="#0d6efd" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <text x="565" y="152" text-anchor="start" fill="#0d6efd" font-family="monospace" font-size="10">GPIO34 (ADC)</text>
+  <path d="M 480 152 v 10" stroke="#0d6efd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M 480 162 l 8,6 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 16,-12 l -16,12 l 8,-6" stroke="#0d6efd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="495" y="188" text-anchor="start" fill="#0d6efd" class="vl">10 kΩ</text>
+  <path d="M 480 218 v 6" stroke="#0d6efd" stroke-width="2.5" fill="none"/>
+  <path d="M 480 224 v 161" class="gnd" stroke-dasharray="5 4"/>
+  <circle cx="480" cy="385" r="4" class="dot"/>
+
+  <!-- Load -->
   <rect x="540" y="50" width="100" height="44" rx="8" fill="#0f3460" stroke="#333" stroke-width="2"/>
   <text x="590" y="67" text-anchor="middle" class="chip">LOAD</text>
   <text x="590" y="83" text-anchor="middle" fill="#868e96" font-size="9">(DUT)</text>
-
-  <!-- Load V+ to rail (post-shunt) -->
   <line x1="480" y1="70" x2="540" y2="70" class="pwr"/>
-  <!-- Load V- down to GND rail -->
   <line x1="590" y1="94" x2="590" y2="385" class="sig"/>
   <circle cx="590" cy="385" r="4" class="dot"/>
 
-  <!-- ============================================================ -->
-  <!--  GROUND RAIL                                                -->
-  <!-- ============================================================ -->
+  <!-- Ground rail -->
   <line x1="40" y1="385" x2="620" y2="385" class="gnd" stroke-dasharray="7 5"/>
+  <path d="M 480 385 l 18 0 M 470 391 l 36 0 M 474 397 l 28 0" class="gnd"/>
+  <path d="M 590 385 l 18 0 M 582 391 l 36 0 M 586 397 l 28 0" class="gnd"/>
+  <path d="M 260 385 l 18 0 M 252 391 l 36 0 M 256 397 l 28 0" class="gnd"/>
 
-  <!-- GND symbols at connection points -->
-  <path d="M 200 385 l 18 0" class="gnd"/>
-  <path d="M 190 391 l 36 0" class="gnd"/>
-  <path d="M 194 397 l 28 0" class="gnd"/>
-
-  <path d="M 590 385 l 18 0" class="gnd"/>
-  <path d="M 582 391 l 36 0" class="gnd"/>
-  <path d="M 586 397 l 28 0" class="gnd"/>
-
-  <path d="M 260 385 l 18 0" class="gnd"/>
-  <path d="M 252 391 l 36 0" class="gnd"/>
-  <path d="M 256 397 l 28 0" class="gnd"/>
-
-  <!-- ============================================================ -->
-  <!--  LEGEND                                                     -->
-  <!-- ============================================================ -->
+  <!-- Legend -->
   <rect x="650" y="430" width="225" height="110" rx="8" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
-  <text x="665" y="450" class="lb">Legend</text>
-
+  <text x="665" y="450" class="lb" font-size="11">Legend</text>
   <line x1="668" y1="470" x2="695" y2="470" class="pwr"/>
-  <text x="702" y="470" class="vl">Power path (V_target)</text>
-
-  <line x1="668" y1="490" x2="695" y2="490" class="adc"/>
-  <text x="702" y="490" class="vl">Divider / ADC sense</text>
-
+  <text x="702" y="470" class="vl">Power path (V_source)</text>
+  <line x1="668" y1="490" x2="695" y2="490" stroke="#0d6efd" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <text x="702" y="490" class="vl">Voltage divider (optional)</text>
   <line x1="668" y1="510" x2="695" y2="510" class="i2c"/>
   <text x="702" y="510" class="vl">I²C bus (SDA / SCL)</text>
-
   <line x1="668" y1="530" x2="695" y2="530" class="gnd" stroke-dasharray="7 5"/>
   <text x="702" y="530" class="vl">Ground</text>
 </svg>
