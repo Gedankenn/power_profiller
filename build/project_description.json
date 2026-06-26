@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "power_profiller",
-    "project_version":    "3a7fe0d",
+    "project_version":    "2e804c3-dirty",
     "project_path":       "/home/sabinho/github/power_profiller",
     "idf_path":           "/home/sabinho/esp/esp-idf",
     "build_dir":          "/home/sabinho/github/power_profiller/build",

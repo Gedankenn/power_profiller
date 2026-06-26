@@ -68,6 +68,7 @@ static int      history_write;     // next slot to write
 static int      history_count;     // valid entries (≤ HISTORY_SIZE)
 static float    energy_mwh;
 static SemaphoreHandle_t history_mutex;
+static bool ina_present = false;
 
 static adc_oneshot_unit_handle_t adc_handle;
 static adc_cali_handle_t        adc_cali;
@@ -324,9 +325,12 @@ static void sensor_task(void *arg)
         float current_a = 0, power_w = 0, v_ext = 0;
         uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
 
-        ina226_bsp_read_current(ina, &current_a);
-        ina226_bsp_read_power(ina, &power_w);
         v_ext = read_voltage_divider();
+
+        if (ina_present) {
+            ina226_bsp_read_current(ina, &current_a);
+            ina226_bsp_read_power(ina, &power_w);
+        }
 
         float current_ma = current_a * 1000.0f;
         float power_mw   = power_w * 1000.0f;
@@ -348,10 +352,12 @@ static void sensor_task(void *arg)
         }
         xSemaphoreGive(history_mutex);
 
-        uint16_t flags = 0;
-        if (ina226_bsp_alert_wait(ina, &flags, 0) == ESP_OK) {
-            if (flags & INA226_FLAG_AFF) {
-                ESP_LOGW(TAG, "Alert: power limit exceeded (flags=0x%04X)", flags);
+        if (ina_present) {
+            uint16_t flags = 0;
+            if (ina226_bsp_alert_wait(ina, &flags, 0) == ESP_OK) {
+                if (flags & INA226_FLAG_AFF) {
+                    ESP_LOGW(TAG, "Alert: power limit exceeded (flags=0x%04X)", flags);
+                }
             }
         }
 
@@ -367,7 +373,7 @@ void app_main(void)
 {
     ESP_LOGI(TAG, "Power profiler v2 — WiFi + web dashboard");
 
-    /* Init hardware */
+    /* Init hardware (I2C needed before WiFi to avoid contention) */
     i2c_init();
     adc_init();
 
@@ -376,23 +382,6 @@ void app_main(void)
     history_write = 0;
     history_count = 0;
     energy_mwh    = 0.0f;
-
-    /* Init INA226 */
-    ina226_config_t cfg = {
-        .avg        = INA226_AVG_16,
-        .bus_ct     = INA226_CT_1100us,
-        .shunt_ct   = INA226_CT_1100us,
-        .mode       = INA226_MODE_SHUNT_BUS_CONT,
-        .shunt_resistance     = SHUNT_OHM,
-        .max_expected_current = MAX_CURRENT_A,
-    };
-
-    ina226_handle_t ina;
-    ESP_ERROR_CHECK(ina226_bsp_init(&ina, I2C_PORT, INA226_ADDR, &cfg));
-    ESP_ERROR_CHECK(ina226_bsp_verify(&ina));
-
-    ESP_ERROR_CHECK(ina226_bsp_alert_setup(&ina, INA226_ALERT_GPIO,
-                     INA226_ALERT_MASK, INA226_ALERT_LIMIT, INA226_ALERT_LATCH));
 
     /* Init NVS + WiFi */
     esp_err_t ret = nvs_flash_init();
@@ -404,6 +393,35 @@ void app_main(void)
 
     /* Start HTTP server */
     start_http_server();
+
+    /* Init INA226 (non-fatal — works without sensor connected) */
+    ina226_config_t cfg = {
+        .avg        = INA226_AVG_16,
+        .bus_ct     = INA226_CT_1100us,
+        .shunt_ct   = INA226_CT_1100us,
+        .mode       = INA226_MODE_SHUNT_BUS_CONT,
+        .shunt_resistance     = SHUNT_OHM,
+        .max_expected_current = MAX_CURRENT_A,
+    };
+
+    ina226_handle_t ina;
+    ret = ina226_bsp_init(&ina, I2C_PORT, INA226_ADDR, &cfg);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "INA226 not found — running without current sensor");
+    } else {
+        ret = ina226_bsp_verify(&ina);
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "INA226 verify failed — running without current sensor");
+        } else {
+            ina_present = true;
+            ESP_LOGI(TAG, "INA226 ready");
+            ret = ina226_bsp_alert_setup(&ina, INA226_ALERT_GPIO,
+                         INA226_ALERT_MASK, INA226_ALERT_LIMIT, INA226_ALERT_LATCH);
+            if (ret != ESP_OK) {
+                ESP_LOGW(TAG, "Alert setup failed (continuing)");
+            }
+        }
+    }
 
     /* Launch sensor task */
     xTaskCreate(sensor_task, "sensor", 4096, &ina, 5, NULL);
