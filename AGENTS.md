@@ -29,6 +29,7 @@ idf.py -p /dev/ttyUSB0 monitor # serial monitor (Ctrl+] to exit)
 | -------- | ---- | ---------------------------- |
 | I2C SDA  | 21   | INA226 data                  |
 | I2C SCL  | 22   | INA226 clock                 |
+| Alert    | 19   | INA226 alert pin (active low, ISR) |
 | V-div in | 34   | ADC1_CH6, input-only (no pull)|
 
 ## Output format
@@ -45,4 +46,5 @@ Feed this into the companion plot script (`scripts/plot.py` – TODO) or pipe in
 
 - C99, ESP-IDF logging (`ESP_LOGI` / `ESP_ERROR_CHECK`), no Arduino layer.
 - Pin assignments, shunt value, divider ratio, sample rate are `#define` at the top of `main/main.c`.
-- `ina226.c` is a standalone driver; keep I2C routines private to it.
+- INA226 driver lives in `main/bsp/ina226_bsp.h`/`.c` — full register coverage, alert ISR, private I2C helpers.
+- Config enums and structs (`ina226_config_t`) match datasheet bit fields exactly.

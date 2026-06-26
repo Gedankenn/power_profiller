@@ -33,11 +33,13 @@ A low-cost power profiler built on the **ESP32** that measures voltage and curre
 |------------|--------|-----------|--------------|
 | 21 | I2C SDA | Bidir | INA226 SDA |
 | 22 | I2C SCL | Output | INA226 SCL |
+| 19 | Alert | Input | INA226 ALERT (active low, interrupt) |
 | 34 | ADC1_CH6 | Input | Voltage divider tap (V_target / 2) |
 | GND | Ground | — | INA226 GND, load GND, divider bottom |
 
 **Notes:**
 - GPIO 34 is input-only (no pull-up/pull-down) — ideal for analog sensing.
+- ALERT pin (GPIO 19) uses negative-edge interrupt with internal pull-up. Configured in `main/main.c`.
 - The voltage divider ratio is **0.5** (10 kΩ / 10 kΩ). To change the measurable voltage range, adjust the divider resistors and update `DIVIDER_R1` / `DIVIDER_R2` in `main/main.c`.
 - The shunt resistor sets the maximum measurable current: 0.1 Ω → ~800 mA. For higher currents, use a smaller shunt (e.g., 0.01 Ω for ~8 A) and update `SHUNT_OHM` and `MAX_CURRENT_A`.
 - INA226 I2C address is 0x40 by default. If using a module with A0/A1 pins strapped differently, update `INA226_ADDR`.
@@ -117,13 +119,14 @@ All key parameters are `#define` at the top of `main/main.c`:
 ```
 power_profiller/
 ├── main/
-│   ├── main.c          # App entry, sensor loop, CSV output
-│   ├── ina226.h        # INA226 driver header
-│   ├── ina226.c        # INA226 driver (I2C read/write, config)
+│   ├── main.c               # App entry, sensor loop, CSV output
+│   ├── bsp/
+│   │   ├── ina226_bsp.h     # INA226 BSP header (enums, structs, API)
+│   │   └── ina226_bsp.c     # INA226 BSP driver (all 10 registers, alert ISR)
 │   └── CMakeLists.txt
-├── CMakeLists.txt       # Root ESP-IDF project
-├── sdkconfig.defaults   # FreeRTOS tick rate, log level
-├── AGENTS.md            # Agent instructions for this repo
+├── CMakeLists.txt            # Root ESP-IDF project
+├── sdkconfig.defaults        # FreeRTOS tick rate, log level
+├── AGENTS.md                 # Agent instructions for this repo
 └── README.md
 ```
 
