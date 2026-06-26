@@ -6,8 +6,9 @@
 #include "freertos/event_groups.h"
 #include "freertos/semphr.h"
 #include "driver/i2c.h"
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_wifi.h"
@@ -42,9 +43,10 @@ static const char *TAG = "profiler";
 #define INA226_ALERT_LATCH   true
 
 /* ---- ADC (voltage divider) ---- */
-#define ADC_CHANNEL     ADC1_CHANNEL_6   // GPIO34
-#define ADC_ATTEN       ADC_ATTEN_DB_11
-#define ADC_WIDTH       ADC_WIDTH_BIT_12
+#define ADC_UNIT        ADC_UNIT_1
+#define ADC_CHANNEL     ADC_CHANNEL_6   // GPIO34
+#define ADC_ATTEN       ADC_ATTEN_DB_12
+#define ADC_BITWIDTH    ADC_BITWIDTH_12
 #define DIVIDER_R1      10000.0f
 #define DIVIDER_R2      10000.0f
 
@@ -67,7 +69,8 @@ static int      history_count;     // valid entries (≤ HISTORY_SIZE)
 static float    energy_mwh;
 static SemaphoreHandle_t history_mutex;
 
-static esp_adc_cal_characteristics_t adc_chars;
+static adc_oneshot_unit_handle_t adc_handle;
+static adc_cali_handle_t        adc_cali;
 static EventGroupHandle_t wifi_event_group;
 
 /* ================================================================
@@ -90,19 +93,37 @@ static void i2c_init(void)
 
 static void adc_init(void)
 {
-    adc1_config_width(ADC_WIDTH);
-    adc1_config_channel_atten(ADC_CHANNEL, ADC_ATTEN);
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH, 1100, &adc_chars);
+    adc_oneshot_unit_init_cfg_t unit_cfg = {
+        .unit_id = ADC_UNIT,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&unit_cfg, &adc_handle));
+
+    adc_oneshot_chan_cfg_t chan_cfg = {
+        .atten   = ADC_ATTEN,
+        .bitwidth = ADC_BITWIDTH,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL, &chan_cfg));
+
+    adc_cali_line_fitting_config_t cali_cfg = {
+        .unit_id      = ADC_UNIT,
+        .atten        = ADC_ATTEN,
+        .bitwidth     = ADC_BITWIDTH,
+        .default_vref = 1100,
+    };
+    ESP_ERROR_CHECK(adc_cali_create_scheme_line_fitting(&cali_cfg, &adc_cali));
 }
 
 static float read_voltage_divider(void)
 {
-    uint32_t sum = 0;
+    int sum = 0, raw = 0;
     for (int i = 0; i < 16; i++) {
-        sum += adc1_get_raw(ADC_CHANNEL);
+        adc_oneshot_read(adc_handle, ADC_CHANNEL, &raw);
+        sum += raw;
     }
-    uint32_t avg = sum / 16;
-    uint32_t mv  = esp_adc_cal_raw_to_voltage(avg, &adc_chars);
+    int avg = sum / 16;
+    int mv  = 0;
+    adc_cali_raw_to_voltage(adc_cali, avg, &mv);
     return (mv / 1000.0f) * ((DIVIDER_R1 + DIVIDER_R2) / DIVIDER_R2);
 }
 
