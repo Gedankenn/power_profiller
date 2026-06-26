@@ -228,7 +228,7 @@ esp_err_t ina226_bsp_read_bus_voltage(ina226_handle_t *h, float *voltage_v)
     esp_err_t ret = read_reg(h, INA226_REG_BUS_VOLT, &raw);
     if (ret != ESP_OK) return ret;
 
-    *voltage_v = ((raw >> 3) * INA226_BUS_LSB_MV) / 1000.0f;
+    *voltage_v = raw * INA226_BUS_LSB_MV / 1000.0f;
     return ESP_OK;
 }
 
