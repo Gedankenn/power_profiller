@@ -1,0 +1,243 @@
+Executing action: monitor
+Serial port /dev/ttyUSB0
+Connecting....
+Detecting chip type... ESP32
+Running idf_monitor in directory /home/sabinho/github/power_profiller
+Executing "/home/sabinho/.espressif/python_env/idf5.5_py3.14_env/bin/python /home/sabinho/esp/esp-idf/tools/idf_monitor.py -p /dev/ttyUSB0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/sabinho/github/power_profiller/build/power_profiller.elf /home/sabinho/github/power_profiller/build/bootloader/bootloader.elf -m '/home/sabinho/.espressif/python_env/idf5.5_py3.14_env/bin/python' '/home/sabinho/esp/esp-idf/tools/idf.py'"...
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6380
+ho 0 tail 12 room 4
+load:0x40078000,len:15916
+load:0x40080400,len:3860
+entry 0x40080638
+[0;32mI (29) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Jun 25 2026 22:12:55[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (30) boot: chip revision: v3.0[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (40) boot.esp32: SPI Flash Size : 2MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (57) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (80) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=1e8cch (125132) map[0m
+[0;32mI (131) esp_image: segment 1: paddr=0002e8f4 vaddr=3ff80000 size=00020h (    32) load[0m
+[0;32mI (131) esp_image: segment 2: paddr=0002e91c vaddr=3ffb0000 size=016fch (  5884) load[0m
+[0;32mI (137) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=9354ch (603468) map[0m
+[0;32mI (348) esp_image: segment 4: paddr=000c3574 vaddr=3ffb16fc size=0282ch ( 10284) load[0m
+[0;32mI (352) esp_image: segment 5: paddr=000c5da8 vaddr=40080000 size=19480h (103552) load[0m
+[0;32mI (405) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (405) boot: Disabling RNG early entropy source...[0m
+[0;32mI (415) cpu_start: Multicore app[0m
+[0;32mI (424) cpu_start: Pro cpu start user code[0m
+[0;32mI (424) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (424) app_init: Application information:[0m
+[0;32mI (424) app_init: Project name:     power_profiller[0m
+[0;32mI (429) app_init: App version:      baa7578[0m
+[0;32mI (432) app_init: Compile time:     Jun 25 2026 23:03:50[0m
+[0;32mI (438) app_init: ELF file SHA256:  c43b48f19...[0m
+[0;32mI (442) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (445) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (449) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (453) efuse_init: Chip rev:         v3.0[0m
+[0;32mI (457) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (464) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (469) heap_init: At 3FFB9318 len 00026CE8 (155 KiB): DRAM[0m
+[0;32mI (474) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (479) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (485) heap_init: At 40099480 len 00006B80 (26 KiB): IRAM[0m
+[0;32mI (492) spi_flash: detected chip: generic[0m
+[0;32mI (494) spi_flash: flash io: dio[0m
+[0;33mW (497) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;33mW (509) i2c: This driver is an old driver, please migrate your application code to adapt `driver/i2c_master.h`[0m
+[0;32mI (519) main_task: Started on CPU0[0m
+[0;32mI (522) main_task: Calling app_main()[0m
+[0;32mI (524) profiler: Power profiler v2 — WiFi + web dashboard[0m
+[0;32mI (558) wifi:wifi driver task: 3ffc15b8, prio:23, stack:6656, core=0[0m
+[0;32mI (573) wifi:wifi firmware version: f3dbad7[0m
+[0;32mI (573) wifi:wifi certification version: v7.0[0m
+[0;32mI (573) wifi:config NVS flash: enabled[0m
+[0;32mI (574) wifi:config nano formatting: disabled[0m
+[0;32mI (578) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (583) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (587) wifi:Init management short buffer num: 32[0m
+[0;32mI (591) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (595) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (599) wifi:Init static rx buffer num: 10[0m
+[0;32mI (603) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (608) wifi_init: rx ba win: 6[0m
+[0;32mI (610) wifi_init: accept mbox: 6[0m
+[0;32mI (613) wifi_init: tcpip mbox: 32[0m
+[0;32mI (616) wifi_init: udp mbox: 6[0m
+[0;32mI (619) wifi_init: tcp mbox: 6[0m
+[0;32mI (621) wifi_init: tcp tx win: 5760[0m
+[0;32mI (624) wifi_init: tcp rx win: 5760[0m
+[0;32mI (628) wifi_init: tcp mss: 1440[0m
+[0;32mI (631) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (634) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;33mW (639) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (647) phy_init: phy_version 4860,6b7a6e5,Feb  6 2025,14:47:07[0m
+[0;32mI (728) wifi:mode : sta (40:22:d8:eb:21:c4)[0m
+[0;32mI (729) wifi:enable tsf[0m
+[0;32mI (785) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (787) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (1789) wifi:state: auth -> init (0x200)[0m
+[0;32mI (1793) wifi:new:<6,0>, old:<6,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;33mW (1795) profiler: WiFi disconnected, reconnecting...[0m
+[0;33mW (4211) profiler: WiFi disconnected, reconnecting...[0m
+[0;33mW (6626) profiler: WiFi disconnected, reconnecting...[0m
+[0;32mI (6725) wifi:new:<6,0>, old:<6,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (6726) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (6738) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (6758) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (6793) wifi:connected with Stella, aid = 9, channel 6, BW20, bssid = 30:96:10:88:01:0c[0m
+[0;32mI (6794) wifi:security: WPA2-PSK, phy: bgn, rssi: -84[0m
+[0;32mI (6798) wifi:pm start, type: 1[0m
+
+[0;32mI (6798) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us[0m
+[0;32mI (6826) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (7882) esp_netif_handlers: sta ip: 192.168.5.106, mask: 255.255.255.0, gw: 192.168.5.1[0m
+[0;32mI (7883) profiler: WiFi connected — IP: 192.168.5.106[0m
+[0;32mI (7885) profiler: WiFi ready[0m
+[0;32mI (7891) profiler: HTTP server started on port 80[0m
+[0;32mI (7892) profiler: I2C bus scan:[0m
+[0;32mI (7909) profiler:   Device found at 0x44[0m
+[0;32mI (7922) profiler: I2C scan complete[0m
+[1;31mE (7922) ina226_bsp: Failed to write config register: ESP_FAIL[0m
+[1;31mE (7923) ina226_bsp: Failed to write config register: ESP_FAIL[0m
+[0;32mI (7926) ina226_bsp: Initialized at 0x44, shunt=0.100 Ω, I_LSB=24.414 µA, CAL=2097[0m
+[0;32mI (7934) ina226_bsp: Device verified: MFG=0x5449 DIE=0x2260[0m
+[0;32mI (7938) profiler: INA226 ready at 0x44[0m
+timestamp_ms,voltage_v,current_ma,power_mw
+7426,4.111,-0.073,0.000
+7531,4.094,-0.073,0.000
+7635,4.091,-0.073,0.000
+7739,4.093,-0.073,0.000
+7842,4.093,-0.073,0.000
+7946,4.093,-0.073,0.000
+8049,4.090,-0.073,0.000
+8154,4.089,-0.073,0.000
+8258,3.483,22.388,72.632
+8362,3.878,8.057,31.128
+8466,3.875,7.983,31.128
+8570,3.580,17.163,59.814
+8674,3.699,15.015,54.321
+8778,4.089,-0.073,0.000
+8882,4.085,-0.073,0.000
+8985,4.082,-0.073,0.000
+9088,4.080,-0.073,0.000
+9192,4.077,-0.073,0.000
+9296,4.075,-0.049,0.000
+9400,4.075,-0.073,0.000
+9504,4.075,-0.073,0.000
+9608,4.074,-0.073,0.000
+9712,4.071,-0.073,0.000
+9816,4.070,-0.073,0.000
+9920,4.071,-0.073,0.000
+10024,4.071,-0.073,0.000
+10128,4.069,-0.073,0.000
+10232,4.068,-0.073,0.000
+10336,3.855,7.520,28.076
+10440,3.868,8.032,31.128
+10544,3.831,9.302,35.400
+10648,3.447,22.925,79.346
+10752,3.841,10.181,39.062
+10856,4.070,-0.049,0.000
+10960,4.069,-0.073,0.000
+11064,4.068,-0.073,0.000
+11168,4.068,-0.073,0.000
+11272,4.064,-0.073,0.000
+11376,4.069,-0.073,0.000
+11480,4.071,-0.073,0.000
+11584,4.071,-0.073,0.000
+11688,4.071,-0.073,0.000
+11792,4.065,-0.073,0.000
+11895,4.064,-0.073,0.000
+11999,4.065,-0.073,0.000
+12103,4.068,-0.073,0.000
+12207,4.069,-0.073,0.000
+12311,4.073,-0.073,0.000
+12415,3.869,8.716,32.959
+12519,3.874,8.081,31.128
+12623,3.878,7.983,31.128
+12727,3.689,14.087,50.659
+12831,3.484,22.559,78.125
+12935,4.077,-0.073,0.000
+13039,4.076,-0.073,0.000
+13143,4.076,-0.073,0.000
+13247,4.077,-0.073,0.000
+13351,4.079,-0.073,0.000
+13455,4.077,-0.073,0.000
+13559,4.079,-0.073,0.000
+13663,4.077,-0.073,0.000
+13767,4.029,1.270,5.493
+13871,3.872,8.081,31.128
+13975,3.872,7.983,31.128
+14079,3.449,21.875,75.684
+14185,3.479,23.047,80.566
+14289,4.071,0.073,0.610
+14394,4.069,-0.073,0.000
+14499,4.068,-0.073,0.000
+14603,4.062,-0.073,0.000
+14707,4.035,-0.073,0.000
+14811,4.048,-0.073,0.000
+14915,4.081,-0.073,0.000
+15019,4.082,-0.073,0.000
+15123,4.076,-0.073,0.000
+15226,4.076,-0.073,0.000
+15330,4.075,-0.073,0.000
+15434,4.075,-0.073,0.000
+15538,4.079,-0.073,0.000
+15641,4.075,-0.073,0.000
+15745,4.095,-0.073,0.000
+15849,4.095,-0.073,0.000
+15953,4.096,-0.073,0.000
+16057,4.095,-0.073,0.000
+16161,4.093,-0.073,0.000
+16265,4.094,-0.073,0.000
+16369,4.093,-0.073,0.000
+16473,4.093,-0.073,0.000
+16577,3.924,8.057,31.128
+16681,3.895,7.983,31.128
+16785,3.569,20.850,73.853
+16889,3.638,17.651,62.866
+16993,3.909,7.349,28.076
+17097,4.086,-0.073,0.000
+17201,4.085,-0.073,0.000
+17305,4.082,-0.073,0.000
+17409,4.081,-0.073,0.000
+17513,4.081,-0.073,0.000
+17617,3.848,7.520,28.076
+17721,3.880,8.057,31.128
+17825,3.846,9.448,36.011
+17929,3.514,22.998,80.566
+18033,3.804,11.133,42.114
+18137,4.079,-0.073,0.000
+18241,4.077,-0.073,0.000
+18344,4.075,-0.073,0.000
+18448,4.075,-0.073,0.000
+18552,4.095,-0.073,0.000
+18656,4.110,-0.073,0.000
+18760,4.110,-0.073,0.000
+18864,4.111,-0.073,0.000
+18968,4.106,-0.073,0.000
+19072,4.153,-0.073,0.000
+19176,4.080,-0.073,0.000
+19280,4.122,-0.073,0.000
+19384,4.005,-0.073,0.000
+19488,4.117,-0.073,0.000
+19592,4.060,-0.073,0.000
+19696,4.073,-0.073,0.000
+19800,4.021,-0.073,0.000
+19904,4.000,-0.073,0.000
+20008,4.068,-0.073,0.000
+20112,4.086,-0.073,0.000

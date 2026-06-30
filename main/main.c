@@ -51,7 +51,7 @@ static const char *TAG = "profiler";
 #define DIVIDER_R2      10000.0f
 
 /* ---- Sample interval ---- */
-#define SAMPLE_INTERVAL_MS  100
+#define SAMPLE_INTERVAL_MS  20   // 50 Hz
 
 /* ---- Ring buffer ---- */
 #define HISTORY_SIZE  300
@@ -421,9 +421,9 @@ void app_main(void)
      * Try common addresses: 0x40 (default), 0x41, 0x44, 0x45 */
     static const uint8_t addrs[] = {0x40, 0x41, 0x44, 0x45};
     ina226_config_t cfg = {
-        .avg        = INA226_AVG_16,
-        .bus_ct     = INA226_CT_1100us,
-        .shunt_ct   = INA226_CT_1100us,
+        .avg        = INA226_AVG_4,     // 4 samples avg (fast)
+        .bus_ct     = INA226_CT_588us,  // 588 µs conversion
+        .shunt_ct   = INA226_CT_588us,
         .mode       = INA226_MODE_SHUNT_BUS_CONT,
         .shunt_resistance     = SHUNT_OHM,
         .max_expected_current = MAX_CURRENT_A,
