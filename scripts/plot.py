@@ -191,18 +191,27 @@ def burst_stats(bursts, t_total_s, idle_ma):
 }
 
 
-def estimate_battery(stats, total_seconds):
-    """Return battery life estimates for a CR2032."""
+def estimate_battery(stats, total_seconds, presses_per_day=4):
+    """Return battery life for a CR2032 — both captured pattern and normal use."""
     avg_ma = stats["avg_power_mw"] / 3.0
     usable_mah = cr2032_usable_mah(avg_ma)
-    total_mwh = usable_mah * 2.9   # avg voltage under load
-    # daily energy from capture window
-    daily_mwh = stats["total_energy_mwh"] * (86400.0 / total_seconds)
-    days = total_mwh / daily_mwh if daily_mwh > 0 else float("inf")
+    total_mwh = usable_mah * 2.9
+
+    daily_mwh_captured = stats["total_energy_mwh"] * (86400.0 / total_seconds)
+    days_captured = total_mwh / daily_mwh_captured if daily_mwh_captured > 0 else float("inf")
+
+    energy_per_burst_mwh = stats["energy_uj_per"] / 3_600_000
+    daily_mwh_normal = energy_per_burst_mwh * presses_per_day
+    days_normal = total_mwh / daily_mwh_normal if daily_mwh_normal > 0 else float("inf")
+
     return {
         "avg_ma": avg_ma, "usable_mah": usable_mah, "total_mwh": total_mwh,
-        "daily_mwh": daily_mwh, "days": days,
-        "months": days / 30.44, "years": days / 365.25,
+        "energy_per_burst_mwh": energy_per_burst_mwh,
+        "captured": {"daily_mwh": daily_mwh_captured, "days": days_captured,
+                     "months": days_captured / 30.44, "years": days_captured / 365.25},
+        "normal":   {"presses_day": presses_per_day, "daily_mwh": daily_mwh_normal,
+                     "days": days_normal, "months": days_normal / 30.44,
+                     "years": days_normal / 365.25},
     }
 
 
@@ -294,8 +303,8 @@ def plot_analysis(t, v, ma, mw, dt, bursts, stats, batt, out_path):
                        f"peak {stats['c_max_peak']:.1f} mA",         YELLOW),
         ("BURST ENERGY",  f"{stats['energy_uj_per']:.0f} µJ",
                         f"{stats['energy_uj_total']:.0f} µJ tot", GREEN),
-        ("BATTERY LIFE",  f"{batt['days']:.0f} days",
-                       f"{batt['months']:.1f} months  ·  {batt['years']:.1f} years", ORANGE),
+        ("BATTERY LIFE",  f"{batt['normal']['days']:.0f} days",
+                        f"@ {batt['normal']['presses_day']:.0f} presses/day  ·  {batt['normal']['years']:.1f}y", ORANGE),
     ]
     for i, (label, val, sub, color) in enumerate(cards):
         x = 0.04 + i * 0.195
@@ -356,8 +365,7 @@ def plot_analysis(t, v, ma, mw, dt, bursts, stats, batt, out_path):
     ax_bat.set_aspect("equal")
     ax_bat.axis("off")
 
-    # circular gauge
-    days = batt["days"]
+    days = batt["normal"]["days"]
     if days > 365:
         pct = min(1.0, days / 730)
         label = f"{days:.0f}d"
@@ -395,12 +403,15 @@ def plot_analysis(t, v, ma, mw, dt, bursts, stats, batt, out_path):
         f"  at {batt['avg_ma']:.2f} mA avg",
         f"",
         f"Usable energy: {batt['total_mwh']:.0f} mWh",
-        f"Daily use:     {stats['total_energy_mwh']/(t[-1]/86400.0):.2f} mWh/d",
+        f"Energy/burst:  {batt['energy_per_burst_mwh']*1000:.0f} µJ",
         f"",
-        f"Estimated life:",
-        f"  {batt['days']:.0f} days",
-        f"  {batt['months']:.1f} months",
-        f"  {batt['years']:.2f} years",
+        f"Captured (test)",
+        f"  {batt['captured']['days']:.0f} d · {batt['captured']['months']:.0f} mo",
+        f"",
+        f"Normal use",
+        f"  {batt['normal']['presses_day']:.0f} presses/day",
+        f"  {batt['normal']['days']:.0f} d · {batt['normal']['months']:.0f} mo",
+        f"  {batt['normal']['years']:.1f} years",
     ]
     for j, line in enumerate(info_lines):
         color = GREEN if j == 0 or j >= 8 else GREY
@@ -456,8 +467,15 @@ def main():
             print(f"  Duty cycle:       {stats['duty_pct']:>6.1f} %")
             print(f"")
             print(f"  🔋 BATTERY LIFE  (CR2032, {batt['usable_mah']:.0f} mAh usable)")
+            print(f"  {'─' * 50}")
+            print(f"  Average burst:    {stats['energy_uj_per']:.0f} µJ")
             print(f"  Average current:  {batt['avg_ma']:.2f} mA")
-            print(f"  Estimated life:   {batt['days']:.0f} days  ({batt['months']:.1f} months, {batt['years']:.2f} years)")
+            print(f"")
+            print(f"  Captured pattern  ({stats['duty_pct']:.1f}% duty, {stats['bursts_per_min']:.0f}/min):")
+            print(f"    → {batt['captured']['days']:.0f}d  ({batt['captured']['months']:.1f} months)")
+            print(f"")
+            print(f"  Normal use  ({batt['normal']['presses_day']:.0f} presses/day):")
+            print(f"    → {batt['normal']['days']:.0f} days  ({batt['normal']['months']:.1f} months, {batt['normal']['years']:.2f} years)")
 
         plot_analysis(t, v, ma, mw, dt, bursts, stats, batt,
                       f"{args.output}_analysis.png")
