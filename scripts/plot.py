@@ -87,6 +87,17 @@ def load_csv(path):
     v   = arr[:, 1]                # V
     ma  = arr[:, 2]                # mA
     mw  = arr[:, 3]                # mW
+
+    # unwrap tick counter (32-bit overflow: detect drop, add offset)
+    cum_offset = 0.0
+    avg_gap = (t[-1] - t[0]) / (len(t) - 1) if len(t) > 1 else 0.02
+    if avg_gap <= 0:
+        avg_gap = 0.02
+    for i in range(1, len(t)):
+        ti = t[i] + cum_offset
+        if ti < t[i - 1]:
+            cum_offset += (t[i - 1] - ti) + avg_gap
+        t[i] += cum_offset
     dt  = np.diff(t, prepend=t[0])
     dt[0] = dt[1] if len(dt) > 1 else 1.0
     e_cum = np.cumsum(mw * dt / 3600.0)
@@ -133,7 +144,7 @@ def detect_bursts(t, v, ma, mw, dt, threshold=0.5, min_gap=0.15):
     # merge bursts separated by < min_gap
     merged = []
     for b in bursts:
-        if merged and (b["start_s"] - merged[-1]["end_s"]) < min_gap:
+        if merged and 0 < (b["start_s"] - merged[-1]["end_s"]) < min_gap:
             prev = merged[-1]
             dur = b["end_s"] - prev["start_s"]
             prev.update({
