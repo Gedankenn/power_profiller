@@ -164,6 +164,34 @@ def detect_bursts(t, v, ma, mw, dt, threshold=0.5, min_gap=0.15):
     return bursts, merged
 
 
+def classify_bursts(bursts):
+    """Auto-split bursts into two populations by largest duration gap."""
+    if len(bursts) < 4:
+        return bursts, [], (None, None)
+
+    durs = sorted([b["duration_s"] * 1000 for b in bursts])
+    gaps = [(durs[i + 1] - durs[i], durs[i]) for i in range(len(durs) - 1)]
+    best_gap, split_at = max(gaps, key=lambda x: x[0])
+
+    # require at least 20% gap to be meaningful
+    if best_gap < split_at * 0.2:
+        return bursts, [], (None, None)
+
+    threshold = split_at + best_gap / 2
+    fast = [b for b in bursts if b["duration_s"] * 1000 < threshold]
+    slow = [b for b in bursts if b["duration_s"] * 1000 >= threshold]
+
+    label_fast = "Short"
+    avg_dur_fast = np.mean([b["duration_s"] for b in fast]) * 1000 if fast else 0
+    avg_dur_slow = np.mean([b["duration_s"] for b in slow]) * 1000 if slow else 0
+    if avg_dur_fast > 0 and avg_dur_slow > 0:
+        if avg_dur_slow / avg_dur_fast > 2.5:
+            label_fast = "Legacy"
+            label_slow = "Challenge"
+
+    return fast, slow, (label_fast, label_slow or "Long")
+
+
 def burst_stats(bursts, t_total_s, idle_ma):
     """Aggregate statistics from burst list."""
     n = len(bursts)
@@ -437,6 +465,127 @@ def plot_analysis(t, v, ma, mw, dt, bursts, stats, batt, out_path):
     print(f"  → {out_path}")
 
 
+def plot_dual_analysis(t, v, ma, mw, dt, fast, slow, labels,
+                        stats_fast, batt_fast, stats_slow, batt_slow, out_path):
+    """Dual burst-type analysis: legacy vs challenge side-by-side."""
+    fig = plt.figure(figsize=(20, 14))
+    lab_f, lab_s = labels
+    title = f"POWER PROFILER  —  Dual Burst Analysis: {lab_f} vs {lab_s}"
+    fig.suptitle(title, fontsize=17, fontweight="bold", y=0.98, color=CYAN)
+
+    # ── top stat cards ──
+    cards = [
+        (lab_f.upper(),   f"{len(fast)} bursts",
+                          f"{stats_fast['duration_s_avg']*1000:.0f} ms avg  ·  {stats_fast['energy_uj_per']:.0f} µJ/burst", CYAN),
+        (lab_s.upper(),   f"{len(slow)} bursts",
+                          f"{stats_slow['duration_s_avg']*1000:.0f} ms avg  ·  {stats_slow['energy_uj_per']:.0f} µJ/burst", MAGENTA),
+        (f"{lab_f} BATTERY", f"{batt_fast['normal']['days']:.0f} days",
+                          f"{batt_fast['normal']['years']:.1f} years  @ 4 presses/day", CYAN),
+        (f"{lab_s} BATTERY", f"{batt_slow['normal']['days']:.0f} days",
+                          f"{batt_slow['normal']['years']:.1f} years  @ 4 presses/day", MAGENTA),
+        ("TOTAL ENERGY",  f"{stats_fast['energy_uj_total']+stats_slow['energy_uj_total']:.0f} µJ",
+                          f"{len(fast)+len(slow)} bursts  ·  {stats_fast['bursts_per_min']+stats_slow['bursts_per_min']:.1f}/min", YELLOW),
+    ]
+    for i, (label, val, sub, color) in enumerate(cards):
+        x = 0.03 + i * 0.195
+        plt.figtext(x, 0.945, val, fontsize=14, fontweight="bold",
+                    color=color, ha="left", fontfamily="monospace")
+        plt.figtext(x, 0.920, label, fontsize=8, color=GREY, ha="left",
+                    fontfamily="monospace", fontweight="bold", alpha=0.7)
+        plt.figtext(x, 0.905, sub, fontsize=7, color=GREY, ha="left",
+                    fontfamily="monospace", alpha=0.5)
+
+    # ── trace with dual shading ──
+    ax_trace = plt.subplot(2, 3, (1, 3))
+    ax2 = ax_trace.twinx()
+    ax_trace.plot(t, v, color=CYAN, linewidth=1.2, alpha=0.8, path_effects=GLOW)
+    ax_trace.set_ylabel("Voltage (V)", color=CYAN)
+    ax_trace.tick_params(axis="y", colors=CYAN)
+    ax2.plot(t, ma, color=MAGENTA, linewidth=1.0, alpha=0.5)
+    ax2.set_ylabel("Current (mA)", color=MAGENTA)
+    ax2.tick_params(axis="y", colors=MAGENTA)
+    for b in fast:
+        ax_trace.axvspan(b["start_s"], b["end_s"], color=CYAN, alpha=0.08, lw=0)
+    for b in slow:
+        ax_trace.axvspan(b["start_s"], b["end_s"], color=MAGENTA, alpha=0.08, lw=0)
+    ax_trace.set_xlabel("Time (s)")
+    ax_trace.grid(True, alpha=0.2)
+
+    # ── duration comparison table ──
+    ax_tab = plt.subplot(2, 3, 4)
+    ax_tab.axis("off")
+    rows = [
+        ("", lab_f.upper(), lab_s.upper()),
+        ("Count", str(len(fast)), str(len(slow))),
+        ("Min dur", f"{min(b['duration_s'] for b in fast)*1000:.0f} ms" if fast else "—",
+                    f"{min(b['duration_s'] for b in slow)*1000:.0f} ms" if slow else "—"),
+        ("Max dur", f"{max(b['duration_s'] for b in fast)*1000:.0f} ms" if fast else "—",
+                    f"{max(b['duration_s'] for b in slow)*1000:.0f} ms" if slow else "—"),
+        ("Avg dur", f"{np.mean([b['duration_s'] for b in fast])*1000:.0f} ms" if fast else "—",
+                    f"{np.mean([b['duration_s'] for b in slow])*1000:.0f} ms" if slow else "—"),
+        ("Avg I",   f"{np.mean([b['c_avg'] for b in fast]):.1f} mA" if fast else "—",
+                    f"{np.mean([b['c_avg'] for b in slow]):.1f} mA" if slow else "—"),
+        ("Peak I",  f"{max(b['c_max'] for b in fast):.0f} mA" if fast else "—",
+                    f"{max(b['c_max'] for b in slow):.0f} mA" if slow else "—"),
+        ("Min V",   f"{min(b['v_min'] for b in fast):.2f} V" if fast else "—",
+                    f"{min(b['v_min'] for b in slow):.2f} V" if slow else "—"),
+        ("Energy",  f"{np.mean([b['energy_mwh'] for b in fast])*3_600_000:.0f} µJ" if fast else "—",
+                    f"{np.mean([b['energy_mwh'] for b in slow])*3_600_000:.0f} µJ" if slow else "—"),
+        ("Battery", f"{batt_fast['normal']['years']:.1f} yr" if fast else "—",
+                    f"{batt_slow['normal']['years']:.1f} yr" if slow else "—"),
+    ]
+    for j, row in enumerate(rows):
+        for k, cell in enumerate(row):
+            if j == 0:
+                color, size, weight = CYAN if k == 1 else (MAGENTA if k == 2 else GREY), 11, "bold"
+            elif k == 0:
+                color, size, weight = GREY, 9, "normal"
+            elif k == 1:
+                color, size, weight = CYAN, 10, "bold"
+            else:
+                color, size, weight = MAGENTA, 10, "bold"
+            ax_tab.text(0.05 + k * 0.45, 0.92 - j * 0.09, cell,
+                        transform=ax_tab.transAxes, fontsize=size,
+                        color=color, fontfamily="monospace", fontweight=weight)
+
+    # ── duration histogram ──
+    ax_dur = plt.subplot(2, 3, 5)
+    d_fast = [b["duration_s"] * 1000 for b in fast]
+    d_slow = [b["duration_s"] * 1000 for b in slow]
+    all_d = d_fast + d_slow
+    bins = np.linspace(0, max(all_d) * 1.15, 20)
+    ax_dur.hist([d_fast, d_slow], bins=bins, color=[CYAN, MAGENTA], alpha=0.7,
+                edgecolor="white", linewidth=0.5, label=[lab_f, lab_s])
+    ax_dur.axvline(np.mean(d_fast) if d_fast else 0, color=CYAN, linewidth=1.5,
+                   linestyle="--")
+    ax_dur.axvline(np.mean(d_slow) if d_slow else 0, color=MAGENTA, linewidth=1.5,
+                   linestyle="--")
+    ax_dur.set_xlabel("Duration (ms)")
+    ax_dur.set_ylabel("Count")
+    ax_dur.legend(fontsize=8, facecolor=CARD, edgecolor=GRID)
+    ax_dur.grid(True, alpha=0.2)
+
+    # ── energy per burst scatter ──
+    ax_en = plt.subplot(2, 3, 6)
+    if fast:
+        ax_en.scatter([b["duration_s"]*1000 for b in fast],
+                      [b["energy_mwh"]*3_600_000 for b in fast],
+                      c=CYAN, s=60, alpha=0.8, label=lab_f, edgecolors="white", linewidth=0.5)
+    if slow:
+        ax_en.scatter([b["duration_s"]*1000 for b in slow],
+                      [b["energy_mwh"]*3_600_000 for b in slow],
+                      c=MAGENTA, s=60, alpha=0.8, label=lab_s, edgecolors="white", linewidth=0.5)
+    ax_en.set_xlabel("Duration (ms)")
+    ax_en.set_ylabel("Energy (µJ)")
+    ax_en.legend(fontsize=8, facecolor=CARD, edgecolor=GRID)
+    ax_en.grid(True, alpha=0.2)
+
+    plt.tight_layout(rect=(0, 0, 1, 0.88))
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close()
+    print(f"  → {out_path}")
+
+
 # ── CLI ──────────────────────────────────────────────────────────
 
 def main():
@@ -449,6 +598,8 @@ def main():
                         help="Single combined chart instead of 3 separate")
     parser.add_argument("--analyze", action="store_true",
                         help="Burst detection + battery life estimation")
+    parser.add_argument("--dual", action="store_true",
+                        help="Dual burst analysis: auto-classify short vs long bursts")
     parser.add_argument("--threshold", type=float, default=0.5,
                         help="Current threshold for burst detection (mA, default 0.5)")
     args = parser.parse_args()
@@ -458,38 +609,77 @@ def main():
     if args.analyze:
         bursts_raw, bursts = detect_bursts(t, v, ma, mw, dt, threshold=args.threshold)
         idle_ma = float(np.mean(ma[ma <= args.threshold])) if (ma <= args.threshold).any() else 0.0
-        stats = burst_stats(bursts, t[-1] - t[0], idle_ma)
-        if stats is not None:
-            batt = estimate_battery(stats, t[-1] - t[0])
-        else:
-            batt = {"avg_ma": 0, "usable_mah": 225, "total_mwh": 675,
-                    "days": float("inf"), "months": float("inf"), "years": float("inf")}
 
-        # terminal summary
-        if stats:
-            print(f"\n  ⚡ BURST ANALYSIS")
-            print(f"  {'─' * 50}")
-            print(f"  Bursts detected:  {stats['n_bursts']:>6d}   ({stats['bursts_per_min']:.1f}/min)")
-            print(f"  Avg duration:     {stats['duration_s_avg']*1000:>6.0f} ms  (max {stats['duration_s_p95']*1000:.0f} ms p95)")
-            print(f"  Avg active I:     {stats['c_avg_avg']:>6.1f} mA  (peak {stats['c_max_peak']:.1f} mA)")
-            print(f"  Voltage sag:       {stats['v_min_global']:>6.2f} V  min under load")
-            print(f"  Energy per burst: {stats['energy_uj_per']:>6.0f} µJ")
-            print(f"  Total energy:     {stats['energy_uj_total']:>6.0f} µJ")
-            print(f"  Duty cycle:       {stats['duty_pct']:>6.1f} %")
-            print(f"")
-            print(f"  🔋 BATTERY LIFE  (CR2032, {batt['usable_mah']:.0f} mAh usable)")
-            print(f"  {'─' * 50}")
-            print(f"  Average burst:    {stats['energy_uj_per']:.0f} µJ")
-            print(f"  Average current:  {batt['avg_ma']:.2f} mA")
-            print(f"")
-            print(f"  Captured pattern  ({stats['duty_pct']:.1f}% duty, {stats['bursts_per_min']:.0f}/min):")
-            print(f"    → {batt['captured']['days']:.0f}d  ({batt['captured']['months']:.1f} months)")
-            print(f"")
-            print(f"  Normal use  ({batt['normal']['presses_day']:.0f} presses/day):")
-            print(f"    → {batt['normal']['days']:.0f} days  ({batt['normal']['months']:.1f} months, {batt['normal']['years']:.2f} years)")
+        if args.dual and len(bursts) >= 4:
+            fast, slow, labels = classify_bursts(bursts)
+            if slow and labels[0]:
+                lab_f, lab_s = labels
+                s_fast = burst_stats(fast, t[-1] - t[0], idle_ma)
+                s_slow = burst_stats(slow, t[-1] - t[0], idle_ma)
+                b_fast = estimate_battery(s_fast, t[-1] - t[0])
+                b_slow = estimate_battery(s_slow, t[-1] - t[0])
 
-        plot_analysis(t, v, ma, mw, dt, bursts, stats, batt,
-                      f"{args.output}_analysis.png")
+                print(f"\n  ⚡ DUAL BURST ANALYSIS  —  {lab_f} vs {lab_s}")
+                print(f"  {'─' * 60}")
+                for label, st, bt, color in [
+                    (lab_f, s_fast, b_fast, CYAN),
+                    (lab_s, s_slow, b_slow, MAGENTA)]:
+                    print(f"  {label}:")
+                    print(f"    Bursts: {st['n_bursts']:>4d}   "
+                          f"Duration: {st['duration_s_avg']*1000:.0f} ms avg  "
+                          f"({min(b['duration_s'] for b in (fast if label==lab_f else slow))*1000:.0f} – "
+                          f"{max(b['duration_s'] for b in (fast if label==lab_f else slow))*1000:.0f} ms)")
+                    print(f"    Current: {st['c_avg_avg']:.1f} mA avg  "
+                          f"(peak {st['c_max_peak']:.0f} mA)  "
+                          f"Voltage: {st['v_min_global']:.2f} V min")
+                    print(f"    Energy:  {st['energy_uj_per']:.0f} µJ/burst  "
+                          f"({st['energy_uj_total']:.0f} µJ total)")
+                    print(f"    Battery: {bt['normal']['days']:.0f} days  "
+                          f"({bt['normal']['years']:.1f} years  @ 4 presses/day)")
+                    print()
+
+                plot_dual_analysis(t, v, ma, mw, dt, fast, slow, labels,
+                                   s_fast, b_fast, s_slow, b_slow,
+                                   f"{args.output}_dual.png")
+                # fall through to basic chart
+            else:
+                args.dual = False  # fallback to single analysis
+
+        if not args.dual:
+            stats = burst_stats(bursts, t[-1] - t[0], idle_ma)
+            if stats is not None:
+                batt = estimate_battery(stats, t[-1] - t[0])
+            else:
+                batt = {"avg_ma": 0, "usable_mah": 225, "total_mwh": 675,
+                        "captured": {"days": float("inf"), "months": float("inf"), "years": float("inf")},
+                        "normal": {"days": float("inf"), "months": float("inf"), "years": float("inf"),
+                                   "presses_day": 4}}
+
+            if stats:
+                print(f"\n  ⚡ BURST ANALYSIS")
+                print(f"  {'─' * 50}")
+                print(f"  Bursts detected:  {stats['n_bursts']:>6d}   ({stats['bursts_per_min']:.1f}/min)")
+                print(f"  Avg duration:     {stats['duration_s_avg']*1000:>6.0f} ms  (max {stats['duration_s_p95']*1000:.0f} ms p95)")
+                print(f"  Avg active I:     {stats['c_avg_avg']:>6.1f} mA  (peak {stats['c_max_peak']:.1f} mA)")
+                print(f"  Voltage sag:       {stats['v_min_global']:>6.2f} V  min under load")
+                print(f"  Energy per burst: {stats['energy_uj_per']:>6.0f} µJ")
+                print(f"  Total energy:     {stats['energy_uj_total']:>6.0f} µJ")
+                print(f"  Duty cycle:       {stats['duty_pct']:>6.1f} %")
+                print(f"")
+                print(f"  🔋 BATTERY LIFE  (CR2032, {batt['usable_mah']:.0f} mAh usable)")
+
+            if stats:
+                print(f"  Average burst:     {stats['energy_uj_per']:.0f} µJ")
+                print(f"  Average current:  {batt['avg_ma']:.2f} mA")
+                print(f"")
+                print(f"  Captured pattern  ({stats['duty_pct']:.1f}% duty, {stats['bursts_per_min']:.0f}/min):")
+                print(f"    → {batt['captured']['days']:.0f}d  ({batt['captured']['months']:.1f} months)")
+                print(f"")
+                print(f"  Normal use  ({batt['normal']['presses_day']:.0f} presses/day):")
+                print(f"    → {batt['normal']['days']:.0f} days  ({batt['normal']['months']:.1f} months, {batt['normal']['years']:.2f} years)")
+
+            plot_analysis(t, v, ma, mw, dt, bursts, stats, batt,
+                          f"{args.output}_analysis.png")
 
     if args.compact:
         plot_compact(t, v, ma, mw, energy, dt, f"{args.output}.png")
