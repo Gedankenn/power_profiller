@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 560" width="880" height="560" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="112%" height="114%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="topbar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0f0f2"/>
+      <stop offset="100%" stop-color="#e4e4e8"/>
+    </linearGradient>
+    <clipPath id="clip"><rect x="0" y="34" width="880" height="526" rx="0"/></clipPath>
+    <style>text{dominant-baseline:middle}</style>
+  </defs>
+
+  <!-- browser chrome -->
+  <g filter="url(#shadow)">
+    <rect x="8" y="8" width="864" height="544" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1"/>
+    <rect x="8" y="8" width="864" height="34" rx="12" fill="url(#topbar)"/>
+    <rect x="8" y="26" width="864" height="16" fill="url(#topbar)"/>
+    <circle cx="28" cy="25" r="6" fill="#ff5f57"/>
+    <circle cx="48" cy="25" r="6" fill="#febc2e"/>
+    <circle cx="68" cy="25" r="6" fill="#28c840"/>
+    <rect x="96" y="16" width="470" height="18" rx="9" fill="#fff"/>
+    <text x="331" y="25" text-anchor="middle" fill="#8a8f98" font-size="10" font-family="monospace">http://192.168.5.98/</text>
+  </g>
+
+  <!-- page content -->
+  <g clip-path="url(#clip)">
+    <text x="28" y="62" fill="#f0f6fc" font-size="18" font-weight="700">⚡ Power Profiler</text>
+    <text x="28" y="80" fill="#8b949e" font-size="11">Live dashboard · updated every second</text>
+
+    <!-- metric cards -->
+    <g>
+      <rect x="28" y="92" width="200" height="66" rx="8" fill="#161b22" stroke="#30363d"/>
+      <text x="128" y="122" text-anchor="middle" fill="#58a6ff" font-size="26" font-weight="700" font-family="monospace">4.987</text>
+      <text x="128" y="146" text-anchor="middle" fill="#8b949e" font-size="10" letter-spacing="1">VOLTAGE (V)</text>
+
+      <rect x="240" y="92" width="200" height="66" rx="8" fill="#161b22" stroke="#30363d"/>
+      <text x="340" y="122" text-anchor="middle" fill="#3fb950" font-size="26" font-weight="700" font-family="monospace">8.374</text>
+      <text x="340" y="146" text-anchor="middle" fill="#8b949e" font-size="10" letter-spacing="1">CURRENT (mA)</text>
+
+      <rect x="452" y="92" width="200" height="66" rx="8" fill="#161b22" stroke="#30363d"/>
+      <text x="552" y="122" text-anchor="middle" fill="#f78166" font-size="26" font-weight="700" font-family="monospace">41.72</text>
+      <text x="552" y="146" text-anchor="middle" fill="#8b949e" font-size="10" letter-spacing="1">POWER (mW)</text>
+    </g>
+
+    <!-- voltage chart -->
+    <g>
+      <rect x="28" y="172" width="624" height="118" rx="8" fill="#161b22" stroke="#30363d"/>
+      <g stroke="#21262d" stroke-width="1">
+        <line x1="50" y1="196" x2="634" y2="196"/>
+        <line x1="50" y1="226" x2="634" y2="226"/>
+        <line x1="50" y1="256" x2="634" y2="256"/>
+      </g>
+      <path d="M50 214 L92 210 L134 212 L176 208 L218 210 L260 206 L302 209 L344 204 L386 207 L428 203 L470 206 L512 202 L554 205 L596 200 L634 203"
+            stroke="#58a6ff" stroke-width="2" fill="none" stroke-linejoin="round"/>
+      <path d="M50 214 L92 210 L134 212 L176 208 L218 210 L260 206 L302 209 L344 204 L386 207 L428 203 L470 206 L512 202 L554 205 L596 200 L634 203 L634 282 L50 282 Z"
+            fill="#58a6ff" opacity="0.08"/>
+      <text x="52" y="248" fill="#8b949e" font-size="9" font-family="monospace">5.02</text>
+      <text x="52" y="280" fill="#8b949e" font-size="9" font-family="monospace">4.96</text>
+    </g>
+
+    <!-- current chart -->
+    <g>
+      <rect x="28" y="300" width="624" height="118" rx="8" fill="#161b22" stroke="#30363d"/>
+      <g stroke="#21262d" stroke-width="1">
+        <line x1="50" y1="324" x2="634" y2="324"/>
+        <line x1="50" y1="354" x2="634" y2="354"/>
+        <line x1="50" y1="384" x2="634" y2="384"/>
+      </g>
+      <path d="M50 378 L92 370 L134 376 L176 356 L218 372 L260 366 L302 360 L344 350 L386 362 L428 352 L470 358 L512 348 L554 360 L596 346 L634 352"
+            stroke="#3fb950" stroke-width="2" fill="none" stroke-linejoin="round"/>
+      <path d="M50 378 L92 370 L134 376 L176 356 L218 372 L260 366 L302 360 L344 350 L386 362 L428 352 L470 358 L512 348 L554 360 L596 346 L634 352 L634 410 L50 410 Z"
+            fill="#3fb950" opacity="0.08"/>
+      <text x="52" y="342" fill="#8b949e" font-size="9" font-family="monospace">16</text>
+      <text x="52" y="406" fill="#8b949e" font-size="9" font-family="monospace">0</text>
+    </g>
+
+    <!-- power chart -->
+    <g>
+      <rect x="28" y="428" width="624" height="104" rx="8" fill="#161b22" stroke="#30363d"/>
+      <g stroke="#21262d" stroke-width="1">
+        <line x1="50" y1="450" x2="634" y2="450"/>
+        <line x1="50" y1="476" x2="634" y2="476"/>
+        <line x1="50" y1="502" x2="634" y2="502"/>
+      </g>
+      <path d="M50 500 L92 492 L134 498 L176 486 L218 494 L260 490 L302 484 L344 478 L386 488 L428 480 L470 486 L512 476 L554 484 L596 474 L634 480"
+            stroke="#f78166" stroke-width="2" fill="none" stroke-linejoin="round"/>
+      <path d="M50 500 L92 492 L134 498 L176 486 L218 494 L260 490 L302 484 L344 478 L386 488 L428 480 L470 486 L512 476 L554 484 L596 474 L634 480 L634 528 L50 528 Z"
+            fill="#f78166" opacity="0.08"/>
+      <text x="52" y="468" fill="#8b949e" font-size="9" font-family="monospace">50</text>
+    </g>
+
+    <!-- energy card -->
+    <g>
+      <rect x="664" y="172" width="188" height="360" rx="8" fill="#161b22" stroke="#30363d"/>
+      <text x="758" y="200" fill="#8b949e" font-size="10" letter-spacing="1">ACCUMULATED</text>
+      <text x="758" y="224" fill="#d2a8ff" font-size="30" font-weight="700" font-family="monospace">0.054</text>
+      <text x="758" y="244" fill="#8b949e" font-size="11">mWh</text>
+      <line x1="688" y1="264" x2="828" y2="264" stroke="#21262d"/>
+      <text x="758" y="288" fill="#8b949e" font-size="10" letter-spacing="1">RING BUFFER</text>
+      <text x="758" y="308" fill="#e6edf3" font-size="12" font-family="monospace">300 samples</text>
+      <text x="758" y="330" fill="#8b949e" font-size="10" letter-spacing="1">POLLING</text>
+      <text x="758" y="350" fill="#e6edf3" font-size="12" font-family="monospace">50 Hz</text>
+      <text x="758" y="372" fill="#8b949e" font-size="10" letter-spacing="1">END-TO-END</text>
+      <text x="758" y="392" fill="#e6edf3" font-size="12" font-family="monospace">Sensor → Wi-Fi</text>
+      <line x1="688" y1="416" x2="828" y2="416" stroke="#21262d"/>
+      <circle cx="704" cy="446" r="4" fill="#3fb950"/>
+      <text x="716" y="446" fill="#8b949e" font-size="10" font-family="monospace">online</text>
+      <circle cx="704" cy="474" r="4" fill="#d2a8ff"/>
+      <text x="716" y="474" fill="#8b949e" font-size="10" font-family="monospace">ESP32 @ 192.168.5.98</text>
+    </g>
+  </g>
+</svg>

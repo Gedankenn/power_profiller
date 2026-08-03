@@ -41,7 +41,7 @@ plt.rcParams.update({
     "font.size": 10, "axes.titlesize": 12, "axes.labelsize": 10,
     "legend.facecolor": CARD, "legend.edgecolor": GRID,
     "legend.fontsize": 9, "savefig.facecolor": BG,
-    "savefig.edgecolor": "none", "savefig.dpi": 200,
+    "savefig.edgecolor": "none", "savefig.dpi": 260,
 })
 GLOW = [pe.withSimplePatchShadow((0, 0), shadow_rgbFace=BG, alpha=0.6),
         pe.Normal()]
