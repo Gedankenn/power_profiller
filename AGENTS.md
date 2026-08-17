@@ -20,7 +20,7 @@ idf.py -p /dev/ttyUSB0 monitor # serial monitor (Ctrl+] to exit)
 ## Hardware
 
 - **MCU**: ESP32
-- **Current sensor**: INA226 (I2C addr 0x40) with 0.1 Ω shunt, handles up to ~800 mA with ~24 µA resolution
+- **Current sensor**: INA226 (I2C addr 0x40) with 0.1 Ω shunt, handles up to ~500 mA with ~1.9 µA effective resolution (64-sample HW averaging)
 - **Voltage sensing**: resistive voltage divider (10 kΩ / 10 kΩ, ratio 0.5) into ADC — reads 0–5 V range scaled to 0–2.5 V at the pin
 
 ### Pinout (editable in `main/main.c`)
@@ -34,7 +34,7 @@ idf.py -p /dev/ttyUSB0 monitor # serial monitor (Ctrl+] to exit)
 
 ## Output format
 
-CSV over serial at 50 samples/s **and** real-time web dashboard via WiFi:
+CSV over serial at ~36 samples/s **and** real-time web dashboard via WiFi:
 
 ```
 timestamp_ms,voltage_v,current_ma,power_mw
