@@ -83,7 +83,7 @@
   <g font-size="11" font-weight="600" letter-spacing="1">
     <rect x="47" y="168" width="116" height="24" rx="12" fill="#11203c" stroke="#2b4a7a"/>
     <circle cx="63" cy="180" r="3.5" fill="#69f0ae"/>
-    <text x="74" y="184" fill="#9fc0ea">50 Hz</text>
+    <text x="74" y="184" fill="#9fc0ea">~36 Hz</text>
 
     <rect x="175" y="168" width="128" height="24" rx="12" fill="#11203c" stroke="#2b4a7a"/>
     <circle cx="191" cy="180" r="3.5" fill="#00e5ff"/>

@@ -1,50 +1,28 @@
-<p align="center">
-  <img src="docs/hero.svg" alt="Power Profiler — real-time energy profiling for battery-powered electronics" width="1000">
-</p>
+<p align="center"><img src="assets/banner.svg" alt="Power Profiler: real-time energy profiling for battery-powered electronics" width="100%"></p>
 
 <p align="center">
-  <a href="https://github.com/espressif/esp-idf"><img src="https://img.shields.io/badge/ESP--IDF-v5.5-6D28D9?logo=espressif&style=flat" alt="ESP-IDF v5.5"></a>
-  <a href="#"><img src="https://img.shields.io/badge/MCU-ESP32-1D4ED8?logo=espressif&style=flat" alt="ESP32"></a>
-  <a href="#"><img src="https://img.shields.io/badge/sensor-INA226-0F766E?style=flat" alt="INA226"></a>
-  <a href="#"><img src="https://img.shields.io/badge/rate-~36%20Hz-0D9488?style=flat" alt="~36 Hz"></a>
-  <a href="#"><img src="https://img.shields.io/badge/interface-I%C2%B2C%20%2B%20WiFi-7C3AED?style=flat" alt="I2C + WiFi"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0F172A?style=flat" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/language-C-F2B54A?style=flat-square&labelColor=0F1419" alt="Language: C">
+  <img src="https://img.shields.io/badge/MCU-ESP32-1C2430?style=flat-square&labelColor=0F1419&logo=espressif" alt="MCU: ESP32">
+  <img src="https://img.shields.io/badge/ESP--IDF-5.5-1C2430?style=flat-square&labelColor=0F1419" alt="ESP-IDF 5.5">
+  <img src="https://img.shields.io/badge/sensor-INA226-1C2430?style=flat-square&labelColor=0F1419" alt="Sensor: INA226">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT--0-263241?style=flat-square&labelColor=0F1419" alt="License: MIT-0"></a>
 </p>
 
----
+**Power Profiler** is a compact, real-time instrument for measuring **voltage**, **current**, **power** and **accumulated energy** of battery-powered and low-power electronics. An **ESP32** reads a **TI INA226** precision current sensor over I²C, streams the data over serial *and* serves a live Chart.js dashboard over Wi-Fi, with no cloud dependencies.
 
-**Power Profiler** is a compact, real-time instrumentation tool for measuring **voltage**, **current**, **power** and **accumulated energy** of battery-powered and low-power electronics. Built around an **ESP32** and a **TI INA226** precision current sensor, it streams measurement data over serial *and* serves a live Chart.js dashboard over WiFi — with zero cloud dependencies.
+> **Status: working.** ~36 samples/s (`SAMPLE_INTERVAL_MS = 28`), serial CSV, live web dashboard and an offline analyzer with burst detection and CR2032 battery-life estimates.
+
+## Overview
 
 > **The only instrument you need to know why your battery died.** Measure it, plot it, fix it.
 
 <p align="center">
-  <img src="docs/block-diagram.svg" alt="System architecture" width="820">
+  <img src="docs/block-diagram.svg" alt="System architecture: INA226 → I²C → ESP32 → serial CSV and Wi-Fi dashboard" width="820">
 </p>
 
----
+**Contents:** [Features](#features) · [Hardware](#hardware) · [Build & Flash](#build--flash) · [Usage](#usage) · [Results](#results) · [Configuration](#configuration) · [Architecture](#architecture) · [License](#license)
 
-## Table of Contents
-
-- [Key Features](#key-features)
-- [Hardware](#hardware)
-  - [Bill of Materials](#bill-of-materials)
-  - [Wiring — INA226 → ESP32](#wiring--ina226--esp32)
-  - [Shunt & Load Connection](#shunt--load-connection)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Build, Flash & Monitor](#build-flash--monitor)
-  - [First Boot](#first-boot)
-- [Web Dashboard](#web-dashboard)
-  - [API Endpoints](#api-endpoints)
-- [Serial Output](#serial-output)
-- [Offline Analysis](#offline-analysis)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [License](#license)
-
----
-
-## Key Features
+## Features
 
 | | |
 |---|---|
@@ -58,8 +36,6 @@
 | 🧬 **Self-verification** | Boot-time check of INA226 Manufacturer ID (0x5449) and Die ID (0x2260) |
 | 🔍 **Automatic I²C scan** | Probes the bus on boot — finds the module at 0x40, 0x41, 0x44 or 0x45 |
 | 🧰 **Fully tunable** | Shunt value, divider ratio, sample rate, WiFi and alert thresholds are all compile-time `#define`s |
-
----
 
 ## Hardware
 
@@ -102,9 +78,7 @@ Optionally, to read the load voltage through the ESP32 ADC instead of VBUS:
 
 6. **ADC divider (optional).** Tap the load-side rail (same node as `VBS`/`IN−`) through a **10 kΩ resistor (`R1`)** to `GPIO 34`, and a second **10 kΩ resistor (`R2`)** from `GPIO 34` to GND. The 10 kΩ / 10 kΩ pair halves the voltage (0–5 V scaled to 0–2.5 V at the pin), which is the maximum the ESP32 ADC can read.
 
----
-
-## Getting Started
+## Build & Flash
 
 ### Prerequisites
 
@@ -112,7 +86,7 @@ Optionally, to read the load voltage through the ESP32 ADC instead of VBUS:
 - A USB-UART cable for the ESP32 board
 - A configured WiFi network (2.4 GHz)
 
-### Build, Flash & Monitor
+### Build, flash & monitor
 
 ```bash
 # One-time setup
@@ -129,7 +103,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 | Exit monitor | `Ctrl+]` |
 | Sample rate | ~36 Hz (`SAMPLE_INTERVAL_MS` = 28) |
 
-### First Boot
+### First boot
 
 1. Set your network credentials — `cp main/secrets.h.example main/secrets.h` and edit `WIFI_SSID` / `WIFI_PASS` there (`main/secrets.h` is gitignored)
 2. Build, flash and open the monitor
@@ -143,9 +117,9 @@ I (2016) profiler:   Device found at 0x44
 I (2024) profiler: INA226 ready at 0x44
 ```
 
----
+## Usage
 
-## Web Dashboard
+### Web dashboard
 
 Point your browser at `http://<esp32-ip>/` and watch live measurements. The page is served **directly from flash** (`main/web_page.h`) — no SPIFFS, no external files — and updates every second.
 
@@ -161,7 +135,7 @@ Chart.js is loaded from a CDN and rendered entirely client-side; the ESP32 is a 
   <img src="docs/dashboard.svg" alt="Live web dashboard" width="820">
 </p>
 
-### API Endpoints
+#### API endpoints
 
 | Method | Path | Response |
 |--------|------|----------|
@@ -169,9 +143,7 @@ Chart.js is loaded from a CDN and rendered entirely client-side; the ESP32 is a 
 | `GET` | `/api/data` | `{"t":[...], "v":[...], "c":[...], "p":[...], "e":1.23}` — up to 300 samples |
 | `GET` | `/api/latest` | `{"t":14237, "v":4.987, "c":8.37, "p":41.72, "e":0.05, "ip":"192.168.5.98"}` |
 
----
-
-## Serial Output
+### Serial output
 
 A CSV stream at **~36 samples/second** for capture with any serial tool or plotter:
 
@@ -194,17 +166,19 @@ Capture a session:
 idf.py -p /dev/ttyUSB0 monitor > measurement.csv
 ```
 
----
+### Offline analysis
 
-## Offline Analysis
-
-The companion `scripts/plot.py` turns captured CSV into publication-ready, cyberpunk-styled figures with **burst detection**, **peak/min tracking** and **CR2032 battery-life estimates** — perfect for profiling intermittent loads (radio beacons, sensors, remotes, wearables).
+The companion `scripts/plot.py` turns captured CSV into figures with **burst detection**, **peak/min tracking** and **CR2032 battery-life estimates** — perfect for profiling intermittent loads (radio beacons, sensors, remotes, wearables).
 
 ```bash
 python3 scripts/plot.py measurement.csv            # 3-panel voltage/current/power
 python3 scripts/plot.py measurement.csv --analyze  # + burst analysis & battery estimate
 python3 scripts/plot.py measurement.csv --dual     # + split short vs long bursts
 ```
+
+## Results
+
+Example captures committed in `docs/`, produced with `scripts/plot.py`:
 
 <p align="center">
   <img src="docs/controle.png" alt="Example measurement — voltage, current and power traces" width="900">
@@ -215,8 +189,6 @@ python3 scripts/plot.py measurement.csv --dual     # + split short vs long burst
   <img src="docs/controle_analysis.png" alt="Burst analysis and battery-life estimate" width="900">
   <em>Burst analysis highlights active periods and projects CR2032 battery life.</em>
 </p>
-
----
 
 ## Configuration
 
@@ -236,9 +208,11 @@ Every tunable parameter is a `#define` at the top of `main/main.c`:
 | `INA226_ALERT_MASK` | `INA226_ALERT_POL` | Power over-limit alert |
 | `INA226_ALERT_LIMIT` | `10000` | Alert threshold (power LSBs) |
 
----
+## Architecture
 
-## Project Structure
+The block diagram is in the [Overview](#overview). Firmware tasks: Wi-Fi + HTTP server, the sensor task that reads the INA226 every `SAMPLE_INTERVAL_MS`, and the CSV writer, all in `main/main.c`; the INA226 driver (all registers, alert ISR, ID verification) is in `main/bsp/`.
+
+### Repository layout
 
 ```
 power_profiller/
@@ -252,7 +226,7 @@ power_profiller/
 ├── scripts/
 │   └── plot.py              # Offline CSV analyzer: burst detection + battery life
 ├── docs/
-│   ├── hero.svg             # README banner
+│   ├── hero.svg             # previous README banner
 │   ├── block-diagram.svg    # System architecture diagram
 │   ├── dashboard.svg        # Web dashboard mockup
 │   ├── controle*.png        # Example measurement & analysis figures
@@ -263,8 +237,9 @@ power_profiller/
 └── README.md
 ```
 
----
-
 ## License
 
-MIT — see [LICENSE](LICENSE) for the full text.
+MIT No Attribution (MIT-0). See [LICENSE](LICENSE).
+
+---
+<sub>Part of <a href="https://github.com/Gedankenn">Fabio Slika Stella's</a> embedded work · <a href="https://gedankenn.github.io/Gedankenn/">portfolio</a></sub>
