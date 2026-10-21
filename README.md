@@ -6,7 +6,7 @@
   <a href="https://github.com/espressif/esp-idf"><img src="https://img.shields.io/badge/ESP--IDF-v5.5-6D28D9?logo=espressif&style=flat" alt="ESP-IDF v5.5"></a>
   <a href="#"><img src="https://img.shields.io/badge/MCU-ESP32-1D4ED8?logo=espressif&style=flat" alt="ESP32"></a>
   <a href="#"><img src="https://img.shields.io/badge/sensor-INA226-0F766E?style=flat" alt="INA226"></a>
-  <a href="#"><img src="https://img.shields.io/badge/rate-50%20Hz-0D9488?style=flat" alt="50 Hz"></a>
+  <a href="#"><img src="https://img.shields.io/badge/rate-~36%20Hz-0D9488?style=flat" alt="~36 Hz"></a>
   <a href="#"><img src="https://img.shields.io/badge/interface-I%C2%B2C%20%2B%20WiFi-7C3AED?style=flat" alt="I2C + WiFi"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0F172A?style=flat" alt="MIT License"></a>
 </p>
@@ -48,11 +48,11 @@
 
 | | |
 |---|---|
-| ⚡ **High-resolution sensing** | INA226 (I²C, 16-bit ADC) with a 0.1 Ω shunt — ~24 µA current resolution, ±800 mA full scale |
+| ⚡ **High-resolution sensing** | INA226 (I²C, 16-bit ADC) with a 0.1 Ω shunt — ~15 µA current LSB, calibrated for 500 mA full scale |
 | 🔋 **Voltage monitoring** | INA226 bus voltage (0–36 V, 1.25 mV LSB) *plus* an optional ADC channel with resistive divider |
 | 🧮 **On-chip power math** | The INA226 computes power natively (VBUS × Current) at 25× the current-LSB resolution |
 | 📈 **Live web dashboard** | Chart.js graphs of voltage, current & power with accumulated energy (mWh) — served over WiFi, no cloud |
-| 🖨️ **Serial CSV stream** | `timestamp_ms,voltage_v,current_ma,power_mw` at 50 samples/s for plotting or logging |
+| 🖨️ **Serial CSV stream** | `timestamp_ms,voltage_v,current_ma,power_mw` at ~36 samples/s for plotting or logging |
 | 🕸️ **WiFi-native** | Connects to your network and serves the dashboard on port 80 |
 | 🚨 **Configurable alert** | Over-voltage/current/power alert on GPIO 19, handled by a hardware ISR |
 | 🧬 **Self-verification** | Boot-time check of INA226 Manufacturer ID (0x5449) and Die ID (0x2260) |
@@ -127,7 +127,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 |---|---|
 | Baud rate | 115200 |
 | Exit monitor | `Ctrl+]` |
-| Sample rate | 50 Hz (`SAMPLE_INTERVAL_MS` = 20) |
+| Sample rate | ~36 Hz (`SAMPLE_INTERVAL_MS` = 28) |
 
 ### First Boot
 
@@ -151,7 +151,7 @@ Point your browser at `http://<esp32-ip>/` and watch live measurements. The page
 
 **What you get:**
 - Three metric cards: **voltage (V)**, **current (mA)** and **power (mW)** — live values
-- Three rolling line charts with the last **6 seconds** of history (300 samples @ 50 Hz)
+- Three rolling line charts with the last **~8 seconds** of history (300 samples @ ~36 Hz)
 - Accumulated **energy (mWh)** — the time-integral of power
 - The ESP32's IP and a live clock in the footer
 
@@ -173,12 +173,12 @@ Chart.js is loaded from a CDN and rendered entirely client-side; the ESP32 is a 
 
 ## Serial Output
 
-A CSV stream at **50 samples/second** for capture with any serial tool or plotter:
+A CSV stream at **~36 samples/second** for capture with any serial tool or plotter:
 
 ```csv
 timestamp_ms,voltage_v,current_ma,power_mw
 1423,4.987,8.374,41.725
-1443,4.985,8.350,41.520
+1451,4.985,8.350,41.520
 ```
 
 | Column | Source | Description |
@@ -228,10 +228,10 @@ Every tunable parameter is a `#define` at the top of `main/main.c`:
 | `WIFI_PASS` | — | WiFi password (edit before flashing) |
 | `INA226_ADDR` | `0x44` | I²C address (auto-detected at boot) |
 | `SHUNT_OHM` | `0.1` | Shunt resistor value (Ω) |
-| `MAX_CURRENT_A` | `0.8` | Full-scale expected current (A) |
+| `MAX_CURRENT_A` | `0.5` | Full-scale expected current (A) |
 | `DIVIDER_R1` | `10000.0` | Top resistor of the external divider (Ω) |
 | `DIVIDER_R2` | `10000.0` | Bottom resistor of the external divider (Ω) |
-| `SAMPLE_INTERVAL_MS` | `20` | Sampling period — 50 Hz |
+| `SAMPLE_INTERVAL_MS` | `28` | Sampling period — ~36 Hz |
 | `INA226_ALERT_GPIO` | `19` | Alert interrupt pin |
 | `INA226_ALERT_MASK` | `INA226_ALERT_POL` | Power over-limit alert |
 | `INA226_ALERT_LIMIT` | `10000` | Alert threshold (power LSBs) |
