@@ -224,7 +224,7 @@ Every tunable parameter is a `#define` at the top of `main/main.c`:
 
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
-| `WIFI_SSID` | `"REDACTED"` | WiFi network name |
+| `WIFI_SSID` | — | WiFi network name (edit before flashing) |
 | `WIFI_PASS` | — | WiFi password (edit before flashing) |
 | `INA226_ADDR` | `0x44` | I²C address (auto-detected at boot) |
 | `SHUNT_OHM` | `0.1` | Shunt resistor value (Ω) |
