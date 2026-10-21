@@ -22,8 +22,11 @@
 static const char *TAG = "profiler";
 
 /* ---- WiFi ---- */
-#define WIFI_SSID   "REDACTED"
-#define WIFI_PASS   "REDACTED"
+#if __has_include("secrets.h")
+#include "secrets.h"   /* WIFI_SSID / WIFI_PASS, gitignored */
+#else
+#error "main/secrets.h missing: copy main/secrets.h.example to main/secrets.h and set your Wi-Fi credentials"
+#endif
 #define WIFI_CONNECTED_BIT  BIT0
 #define WIFI_FAIL_BIT       BIT1
 
