@@ -46,7 +46,7 @@ timestamp_ms,voltage_v,current_ma,power_mw
 
 ## WiFi
 
-Credentials are hardcoded `#define` at the top of `main/main.c`. Edit `WIFI_SSID` and `WIFI_PASS` before flashing.
+Credentials live in `main/secrets.h` (gitignored; template in `main/secrets.h.example`), included by `main/main.c`. Set `WIFI_SSID` and `WIFI_PASS` there before flashing.
 WiFi init blocks up to 30 s; HTTP server starts only after connection.
 
 ## Conventions

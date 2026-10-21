@@ -131,7 +131,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 
 ### First Boot
 
-1. Set your network credentials — edit `WIFI_SSID` and `WIFI_PASS` in `main/main.c:25-26`
+1. Set your network credentials — `cp main/secrets.h.example main/secrets.h` and edit `WIFI_SSID` / `WIFI_PASS` there (`main/secrets.h` is gitignored)
 2. Build, flash and open the monitor
 3. Note the assigned IP address in the boot log
 4. Open `http://<esp32-ip>/` in your browser
@@ -224,8 +224,8 @@ Every tunable parameter is a `#define` at the top of `main/main.c`:
 
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
-| `WIFI_SSID` | — | WiFi network name (edit before flashing) |
-| `WIFI_PASS` | — | WiFi password (edit before flashing) |
+| `WIFI_SSID` | — | WiFi network name (set in `main/secrets.h`) |
+| `WIFI_PASS` | — | WiFi password (set in `main/secrets.h`) |
 | `INA226_ADDR` | `0x44` | I²C address (auto-detected at boot) |
 | `SHUNT_OHM` | `0.1` | Shunt resistor value (Ω) |
 | `MAX_CURRENT_A` | `0.5` | Full-scale expected current (A) |
